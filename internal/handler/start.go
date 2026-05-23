@@ -29,5 +29,6 @@ func initHandlers(ac pbauth.AuthServiceClient, asc pbauth.AssistantServiceClient
 
 func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler) {
 	r.POST("/login", ah.Login)
+	r.POST("/assistants", ah.Create)
 	r.PATCH("/me/password", middleware.Auth(ac), ah.SetPassword)
 }

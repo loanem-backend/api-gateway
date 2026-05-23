@@ -24,8 +24,9 @@ func main() {
 
 	handler.Start(r, authConn)
 
+	port := config.GetEnv("APP_PORT", "8080")
 	srv := &http.Server{
-		Addr:    ":" + config.GetEnv("APP_PORT", "8080"),
+		Addr:    ":" + port,
 		Handler: r,
 	}
 	go func() {
@@ -33,6 +34,7 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
+	log.Printf("Api gateway running on port %s\n", port)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

@@ -11,3 +11,13 @@ func NewLoginResponse(resp *pbauth.LoginResponse) *LoginResponse {
 		Token: resp.GetToken(),
 	}
 }
+
+type CreateAssistantResponse struct {
+	ID int `json:"id"`
+}
+
+func NewCreateAssistantResponse(resp *pbauth.CreateAssistantResponse) *CreateAssistantResponse {
+	return &CreateAssistantResponse{
+		ID: int(resp.GetId()),
+	}
+}

@@ -47,6 +47,28 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusCreated, respx.ResponseSucceed("Logged in successfully", dto.NewLoginResponse(resp)))
 }
 
+func (h *AuthHandler) Create(c *gin.Context) {
+	var req pbauth.CreateAssistantRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid body", err))
+		return
+	}
+
+	resp, err := h.assistantClient.CreateAssistant(c, &req)
+	if err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed creating asssistant", err))
+		return
+	}
+
+	c.JSON(http.StatusCreated, respx.ResponseSucceed("Assistant successfully created", dto.NewCreateAssistantResponse(resp)))
+}
+
 func (h *AuthHandler) SetPassword(c *gin.Context) {
 	// ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
 	// defer cancel()
