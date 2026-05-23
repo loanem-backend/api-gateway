@@ -1,33 +1,33 @@
 package handler
 
 import (
-	"fmt"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/loanem-backend/api-gateway/internal/middleware"
 	pbauth "github.com/loanem-backend/protos/pb/proto/services/auth/v1"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
-func Start(ge *gin.Engine) {
-	authConn, err := grpc.NewClient(serviceAddr(auth), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(fmt.Errorf("failed connecting to services: %w", err))
-	}
+func Start(ge *gin.Engine, ac *grpc.ClientConn) {
+	var (
+		authClient      = pbauth.NewAuthServiceClient(ac)
+		assistantClient = pbauth.NewAssistantServiceClient(ac)
+	)
 
-	authClient := pbauth.NewAuthServiceClient(authConn)
+	ah := initHandlers(authClient, assistantClient)
 
-	ah := initHandlers(authClient)
-
-	routes(ge, ah)
+	r := ge.Use(middleware.Timeout(2 * time.Second))
+	routes(r, authClient, ah)
 }
 
-func initHandlers(ac pbauth.AuthServiceClient) *AuthHandler {
-	authHand := NewAuthHandler(ac)
+func initHandlers(ac pbauth.AuthServiceClient, asc pbauth.AssistantServiceClient) *AuthHandler {
+	authHand := NewAuthHandler(ac, asc)
 
 	return authHand
 }
 
-func routes(r *gin.Engine, ah *AuthHandler) {
+func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler) {
 	r.POST("/login", ah.Login)
+	r.PATCH("/me/password", middleware.Auth(ac), ah.SetPassword)
 }

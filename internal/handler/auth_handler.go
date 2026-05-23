@@ -3,27 +3,29 @@ package handler
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/loanem-backend/api-gateway/internal/dto"
 	"github.com/loanem-backend/api-gateway/pkg/respx"
 	pbauth "github.com/loanem-backend/protos/pb/proto/services/auth/v1"
+	"google.golang.org/grpc/metadata"
 )
 
 type AuthHandler struct {
-	client pbauth.AuthServiceClient
+	authClient      pbauth.AuthServiceClient
+	assistantClient pbauth.AssistantServiceClient
 }
 
-func NewAuthHandler(c pbauth.AuthServiceClient) *AuthHandler {
+func NewAuthHandler(ac pbauth.AuthServiceClient, asc pbauth.AssistantServiceClient) *AuthHandler {
 	return &AuthHandler{
-		client: c,
+		authClient:      ac,
+		assistantClient: asc,
 	}
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
-	ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
+	// defer cancel()
 
 	var req pbauth.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -31,10 +33,10 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.client.Login(ctx, &req)
+	resp, err := h.authClient.Login(c, &req)
 	if err != nil {
-		if ctx.Err() == context.DeadlineExceeded {
-			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", ctx.Err()))
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
 			return
 		}
 
@@ -43,4 +45,34 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, respx.ResponseSucceed("Logged in successfully", dto.NewLoginResponse(resp)))
+}
+
+func (h *AuthHandler) SetPassword(c *gin.Context) {
+	// ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
+	// defer cancel()
+
+	var req pbauth.SetAssistantPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid body", err))
+		return
+	}
+
+	md := metadata.Pairs(
+		"id", c.MustGet("id").(string),
+		"name", c.MustGet("name").(string),
+	)
+
+	ctx := metadata.NewOutgoingContext(c.Request.Context(), md)
+
+	if _, err := h.assistantClient.SetAssistantPassword(ctx, &req); err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed updating assistant", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, respx.ResponseSucceed("Assistant successfully updated", nil))
 }
