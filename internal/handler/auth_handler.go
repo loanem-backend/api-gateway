@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/loanem-backend/api-gateway/internal/dto"
@@ -80,7 +81,7 @@ func (h *AuthHandler) SetPassword(c *gin.Context) {
 	}
 
 	md := metadata.Pairs(
-		"id", c.MustGet("id").(string),
+		"id", strconv.Itoa(int(c.MustGet("id").(int32))),
 		"name", c.MustGet("name").(string),
 	)
 
