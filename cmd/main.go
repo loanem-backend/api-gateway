@@ -20,9 +20,9 @@ func main() {
 
 	r := gin.Default()
 
-	authConn := handler.InitConnections()
+	authConn, inventoryConn := handler.InitConnections()
 
-	handler.Start(r, authConn)
+	handler.Start(r, authConn, inventoryConn)
 
 	port := config.GetEnv("APP_PORT", "8080")
 	srv := &http.Server{

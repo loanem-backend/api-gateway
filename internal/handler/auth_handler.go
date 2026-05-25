@@ -3,13 +3,11 @@ package handler
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/loanem-backend/api-gateway/internal/dto"
 	"github.com/loanem-backend/api-gateway/pkg/respx"
 	pbauth "github.com/loanem-backend/protos/pb/proto/services/auth/v1"
-	"google.golang.org/grpc/metadata"
 )
 
 type AuthHandler struct {
@@ -80,12 +78,7 @@ func (h *AuthHandler) SetPassword(c *gin.Context) {
 		return
 	}
 
-	md := metadata.Pairs(
-		"id", strconv.Itoa(int(c.MustGet("id").(int32))),
-		"name", c.MustGet("name").(string),
-	)
-
-	ctx := metadata.NewOutgoingContext(c.Request.Context(), md)
+	ctx := setLoginDataToContext(c)
 
 	if _, err := h.assistantClient.SetAssistantPassword(ctx, &req); err != nil {
 		if c.Err() == context.DeadlineExceeded {
