@@ -21,12 +21,15 @@ type serviceIdx int
 
 const (
 	auth serviceIdx = iota
+	inventory
 )
 
 func serviceName(idx serviceIdx) string {
 	switch idx {
 	case auth:
 		return "auth"
+	case inventory:
+		return "inventory"
 	default:
 		return ""
 	}
