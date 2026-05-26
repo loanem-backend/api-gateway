@@ -20,9 +20,9 @@ func main() {
 
 	r := gin.Default()
 
-	authConn, inventoryConn := handler.InitConnections()
+	authConn, courseConn, inventoryConn := handler.InitConnections()
 
-	handler.Start(r, authConn, inventoryConn)
+	handler.Start(r, authConn, courseConn, inventoryConn)
 
 	port := config.GetEnv("APP_PORT", "8080")
 	srv := &http.Server{
@@ -48,7 +48,7 @@ func main() {
 		log.Fatal("forced to shutdown: ", err)
 	}
 
-	handler.CloseConnections(authConn)
+	handler.CloseConnections(authConn, courseConn, inventoryConn)
 
 	log.Println("Exited")
 }

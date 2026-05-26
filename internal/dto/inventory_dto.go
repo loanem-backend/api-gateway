@@ -11,3 +11,13 @@ func NewCreateInstrumentResponse(resp *pbinventory.AddInstrumentResponse) *Creat
 		ID: int(resp.GetId()),
 	}
 }
+
+type CreateToolkitResponse struct {
+	ID int `json:"id"`
+}
+
+func NewCreateToolkitResponse(resp *pbinventory.AddToolkitResponse) *CreateToolkitResponse {
+	return &CreateToolkitResponse{
+		ID: int(resp.GetId()),
+	}
+}
