@@ -11,16 +11,18 @@ import (
 )
 
 type InventoryHandler struct {
-	inventoryClient pbinventory.InventoryServiceClient
+	instrumentClient pbinventory.InstrumentServiceClient
+	toolkitClient    pbinventory.ToolkitServiceClient
 }
 
-func NewInventoryHandler(ic pbinventory.InventoryServiceClient) *InventoryHandler {
+func NewInventoryHandler(ic pbinventory.InstrumentServiceClient, tc pbinventory.ToolkitServiceClient) *InventoryHandler {
 	return &InventoryHandler{
-		inventoryClient: ic,
+		instrumentClient: ic,
+		toolkitClient:    tc,
 	}
 }
 
-func (h *InventoryHandler) Create(c *gin.Context) {
+func (h *InventoryHandler) CreateInstrument(c *gin.Context) {
 	var req pbinventory.AddInstrumentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid body", err))
@@ -29,7 +31,7 @@ func (h *InventoryHandler) Create(c *gin.Context) {
 
 	ctx := setLoginDataToContext(c)
 
-	resp, err := h.inventoryClient.AddInstrument(ctx, &req)
+	resp, err := h.instrumentClient.AddInstrument(ctx, &req)
 	if err != nil {
 		if c.Err() == context.DeadlineExceeded {
 			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
@@ -41,4 +43,27 @@ func (h *InventoryHandler) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, respx.ResponseSucceed("Instrument successfully created", dto.NewCreateInstrumentResponse(resp)))
+}
+
+func (h *InventoryHandler) CreateToolkit(c *gin.Context) {
+	var req pbinventory.AddToolkitRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid body", err))
+		return
+	}
+
+	ctx := setLoginDataToContext(c)
+
+	resp, err := h.toolkitClient.AddToolkit(ctx, &req)
+	if err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed creating toolkit", err))
+		return
+	}
+
+	c.JSON(http.StatusCreated, respx.ResponseSucceed("Toolkit successfully created", dto.NewCreateToolkitResponse(resp)))
 }
