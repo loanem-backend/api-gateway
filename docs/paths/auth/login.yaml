@@ -1,0 +1,25 @@
+post:
+  tags: [auth]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            phone:
+              type: string
+            password:
+              type: string
+  responses:
+    '201':
+      description: Successfully logged in.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/schema/general.yaml#/components/schemas/SuccessResponse'
+              - type: object
+                properties:
+                  data:
+                    $ref: '../../components/schema/general.yaml#/components/schemas/IdInt'

@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info:
+  title: Loanem Back-End - OpenAPI 3.0
+  description: |-
+    This is a sample Loanem Back-End Server based on the OpenAPI 3.0 specification.
+  version: 1.0.0
+
+tags:
+  - name: auth
+    description: served by `auth-service`
+
+paths:
+  /login:
+    $ref: './docs/paths/auth/login.yaml'
