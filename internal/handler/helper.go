@@ -18,3 +18,9 @@ func setLoginDataToContext(c *gin.Context) context.Context {
 
 	return ctx
 }
+
+func parseIntParam(c *gin.Context, param string) (int, error) {
+	value := c.Param(param)
+
+	return strconv.Atoi(value)
+}

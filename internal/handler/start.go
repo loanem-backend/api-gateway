@@ -46,6 +46,7 @@ func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler, ch *Cou
 	r.PATCH("/me/password", middleware.Auth(ac), ah.SetPassword)
 
 	r.POST("/courses", middleware.Auth(ac), ch.Create)
+	r.DELETE("/courses/:courseId", middleware.Auth(ac), ch.Remove)
 
 	r.POST("/instruments", middleware.Auth(ac), ih.CreateInstrument)
 	r.POST("/toolkits", middleware.Auth(ac), ih.CreateToolkit)

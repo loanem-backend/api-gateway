@@ -40,5 +40,26 @@ func (h *CourseHandler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, respx.ResponseSucceed("Instrument successfully created", dto.NewCreateCourseResponse(resp)))
+	c.JSON(http.StatusCreated, respx.ResponseSucceed("Course successfully created", dto.NewCreateCourseResponse(resp)))
+}
+
+func (h *CourseHandler) Remove(c *gin.Context) {
+	idParam, err := parseIntParam(c, "courseId")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid param", err))
+		return
+	}
+
+	req := pbcourse.RemoveCourseRequest{
+		Id: int32(idParam),
+	}
+
+	ctx := setLoginDataToContext(c)
+
+	if _, err := h.courseClient.RemoveCourse(ctx, &req); err != nil {
+		c.JSON(http.StatusBadRequest, respx.ResponseFail("failed deleting course", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, respx.ResponseSucceed("Course successfully deleted", nil))
 }
