@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: Loanem Back-End - OpenAPI 3.0
+  description: |-
+    This is a sample Loanem Back-End Server based on the OpenAPI 3.0 specification.
+  version: 1.0.0
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: auth
+  - name: course
+  - name: inventory
+
+paths:
+  /login:
+    $ref: './docs/paths/auth/login.yaml'
+  /courses:
+    $ref: './docs/paths/course/courses.yaml'
+  /courses/{courseID}:
+    $ref: './docs/paths/course/courses_{id}.yaml'
+  /toolkits:
+    $ref: './docs/paths/inventory/toolkits.yaml'

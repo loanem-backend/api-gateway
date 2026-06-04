@@ -1,0 +1,22 @@
+SuccessResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+    message:
+      type: string
+  required: [success, message]
+
+IdInt:
+  type: object
+  properties:
+    id:
+      type: integer
+  required: [id]
+  
+TokenString:
+  type: object
+  properties:
+    token:
+      type: string
+  required: [token]
