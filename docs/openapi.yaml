@@ -29,3 +29,5 @@ paths:
     $ref: './docs/paths/course/courses_{id}.yaml'
   /toolkits:
     $ref: './docs/paths/inventory/toolkits.yaml'
+  /instruments:
+    $ref: './docs/paths/inventory/instruments.yaml'
