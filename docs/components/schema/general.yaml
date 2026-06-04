@@ -14,3 +14,9 @@ components:
         id:
           type: integer
       required: [id]
+    TokenString:
+      type: object
+      properties:
+        token:
+          type: string
+      required: [token]
