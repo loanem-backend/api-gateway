@@ -20,8 +20,8 @@ post:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/schema/general.yaml#/components/schemas/SuccessResponse'
+              - $ref: '../../components/schema/general.yaml#/SuccessResponse'
               - type: object
                 properties:
                   data:
-                    $ref: '../../components/schema/general.yaml#/components/schemas/IdInt'
+                    $ref: '../../components/schema/general.yaml#/IdInt'

@@ -15,4 +15,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/schema/general.yaml#/components/schemas/SuccessResponse'
+            $ref: '../../components/schema/general.yaml#/SuccessResponse'

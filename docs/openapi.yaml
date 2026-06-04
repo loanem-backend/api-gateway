@@ -18,6 +18,7 @@ security:
 tags:
   - name: auth
   - name: course
+  - name: inventory
 
 paths:
   /login:
@@ -26,3 +27,5 @@ paths:
     $ref: './docs/paths/course/courses.yaml'
   /courses/{courseID}:
     $ref: './docs/paths/course/courses_{id}.yaml'
+  /toolkits:
+    $ref: './docs/paths/inventory/toolkits.yaml'

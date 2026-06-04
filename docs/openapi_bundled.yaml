@@ -15,6 +15,7 @@ security:
 tags:
     - name: auth
     - name: course
+    - name: inventory
 paths:
     /login:
         post:
@@ -127,3 +128,95 @@ paths:
                                 required:
                                     - success
                                     - message
+    /toolkits:
+        post:
+            tags:
+                - inventory
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                kit_name:
+                                    type: string
+                                total_count:
+                                    type: integer
+            responses:
+                '201':
+                    description: Toolkit successfully created.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - type: object
+                                      properties:
+                                        success:
+                                            type: boolean
+                                        message:
+                                            type: string
+                                      required:
+                                        - success
+                                        - message
+                                    - type: object
+                                      properties:
+                                        data:
+                                            type: object
+                                            properties:
+                                                id:
+                                                    type: integer
+                                            required:
+                                                - id
+        get:
+            tags:
+                - inventory
+            responses:
+                '200':
+                    description: Toolkits successfully retrieved.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - type: object
+                                      properties:
+                                        success:
+                                            type: boolean
+                                        message:
+                                            type: string
+                                      required:
+                                        - success
+                                        - message
+                                    - type: object
+                                      properties:
+                                        data:
+                                            type: array
+                                            items:
+                                                type: object
+                                                properties:
+                                                    id:
+                                                        type: integer
+                                                    kit_name:
+                                                        type: string
+                                                    total_count:
+                                                        type: integer
+                                                    out_of_order_count:
+                                                        type: integer
+                                                    course_id:
+                                                        type: integer
+                                                    created_at:
+                                                        type: string
+                                                        format: date-time
+                                                    updated_at:
+                                                        type: string
+                                                        format: date-time
+                                                required:
+                                                    - id
+                                                    - kit_name
+                                                    - total_count
+                                                    - out_of_order_count
+                                                    - course_id
+                                                    - created_at
+                                                    - updated_at

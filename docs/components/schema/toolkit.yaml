@@ -1,0 +1,20 @@
+Toolkit:
+  type: object
+  properties:
+    id:
+      type: integer
+    kit_name:
+      type: string
+    total_count:
+      type: integer
+    out_of_order_count:
+      type: integer
+    course_id:
+      type: integer
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+  required: [id, kit_name, total_count, out_of_order_count, course_id, created_at, updated_at]

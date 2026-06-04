@@ -1,0 +1,44 @@
+post:
+  tags: [inventory]
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            kit_name:
+              type: string
+            total_count:
+              type: integer
+  responses:
+    '201':
+      description: Toolkit successfully created.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/schema/general.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  data:
+                    $ref: '../../components/schema/general.yaml#/IdInt'
+
+get:
+  tags: [inventory]
+  responses:
+    '200':
+      description: Toolkits successfully retrieved.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/schema/general.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '../../components/schema/toolkit.yaml#/Toolkit'
