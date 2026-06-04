@@ -17,8 +17,12 @@ security:
 
 tags:
   - name: auth
-    description: served by `auth-service`
+  - name: course
 
 paths:
   /login:
     $ref: './docs/paths/auth/login.yaml'
+  /courses:
+    $ref: './docs/paths/course/courses.yaml'
+  /courses/{courseID}:
+    $ref: './docs/paths/course/courses_{id}.yaml'

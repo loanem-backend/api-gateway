@@ -1,0 +1,18 @@
+delete:
+  tags: [course]
+  security:
+    - BearerAuth: []
+  parameters:
+    - in: path
+      name: courseID
+      schema:
+        type: integer
+      required: true
+      description: Numeric ID of the course to delete
+  responses:
+    '200':
+      description: Course successfully deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schema/general.yaml#/components/schemas/SuccessResponse'

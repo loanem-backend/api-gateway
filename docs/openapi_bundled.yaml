@@ -14,7 +14,7 @@ security:
     - BearerAuth: []
 tags:
     - name: auth
-      description: served by `auth-service`
+    - name: course
 paths:
     /login:
         post:
@@ -57,3 +57,73 @@ paths:
                                                     type: string
                                             required:
                                                 - token
+    /courses:
+        post:
+            tags:
+                - course
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name:
+                                    type: string
+                                year:
+                                    type: integer
+            responses:
+                '201':
+                    description: Course successfully created.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - type: object
+                                      properties:
+                                        success:
+                                            type: boolean
+                                        message:
+                                            type: string
+                                      required:
+                                        - success
+                                        - message
+                                    - type: object
+                                      properties:
+                                        data:
+                                            type: object
+                                            properties:
+                                                id:
+                                                    type: integer
+                                            required:
+                                                - id
+    /courses/{courseID}:
+        delete:
+            tags:
+                - course
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: courseID
+                  schema:
+                    type: integer
+                  required: true
+                  description: Numeric ID of the course to delete
+            responses:
+                '200':
+                    description: Course successfully deleted.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                    message:
+                                        type: string
+                                required:
+                                    - success
+                                    - message
