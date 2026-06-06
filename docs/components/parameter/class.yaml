@@ -1,0 +1,7 @@
+ClassIDParam:
+  in: path
+  name: classID
+  schema:
+    type: integer
+  required: true
+  description: Numeric ID as the team(s)' parent class.

@@ -1,0 +1,17 @@
+TeamWithClass:
+  type: object
+  properties:
+    id: 
+      type: string
+      format: uuid
+    number:
+      type: integer
+    class:
+      $ref: ../../components/schema/class.yaml#/WithClass
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+  required: [id, number, class, created_at, updated_at]

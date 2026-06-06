@@ -16,6 +16,7 @@ tags:
     - name: auth
     - name: course
     - name: inventory
+    - name: participant
 paths:
     /login:
         post:
@@ -299,5 +300,220 @@ paths:
                                                 required:
                                                     - id
                                                     - name
+                                                    - created_at
+                                                    - updated_at
+    /courses/{courseID}/classes:
+        post:
+            tags:
+                - participant
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: courseID
+                  schema:
+                    type: integer
+                  required: true
+                  description: Numeric ID as the class(es)' parent course.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
+                                minLength: 1
+                                maxLength: 1
+            responses:
+                '201':
+                    description: Classes successfully created.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                    message:
+                                        type: string
+                                required:
+                                    - success
+                                    - message
+        get:
+            tags:
+                - participant
+            parameters:
+                - in: path
+                  name: courseID
+                  schema:
+                    type: integer
+                  required: true
+                  description: Numeric ID as the class(es)' parent course.
+            responses:
+                '200':
+                    description: Classes successfully retrieved.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - type: object
+                                      properties:
+                                        success:
+                                            type: boolean
+                                        message:
+                                            type: string
+                                      required:
+                                        - success
+                                        - message
+                                    - type: object
+                                      properties:
+                                        data:
+                                            type: array
+                                            items:
+                                                type: object
+                                                properties:
+                                                    id:
+                                                        type: integer
+                                                    name:
+                                                        type: string
+                                                        minLength: 1
+                                                        maxLength: 1
+                                                    course:
+                                                        type: object
+                                                        properties:
+                                                            id:
+                                                                type: integer
+                                                            name:
+                                                                type: string
+                                                            year:
+                                                                type: integer
+                                                        required:
+                                                            - id
+                                                            - name
+                                                            - year
+                                                    created_at:
+                                                        type: string
+                                                        format: date-time
+                                                    updated_at:
+                                                        type: string
+                                                        format: date-time
+                                                required:
+                                                    - id
+                                                    - name
+                                                    - course
+                                                    - created_at
+                                                    - updated_at
+    /classes/{classID}/teams:
+        post:
+            tags:
+                - participant
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: classID
+                  schema:
+                    type: integer
+                  required: true
+                  description: Numeric ID of the class to be related to.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                number_of_teams:
+                                    type: integer
+            responses:
+                '201':
+                    description: Classes successfully created.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                    message:
+                                        type: string
+                                required:
+                                    - success
+                                    - message
+        get:
+            tags:
+                - participant
+            parameters:
+                - in: path
+                  name: classID
+                  schema:
+                    type: integer
+                  required: true
+                  description: Numeric ID as the team(s)' parent class.
+            responses:
+                '200':
+                    description: Teams successfully retrieved.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - type: object
+                                      properties:
+                                        success:
+                                            type: boolean
+                                        message:
+                                            type: string
+                                      required:
+                                        - success
+                                        - message
+                                    - type: object
+                                      properties:
+                                        data:
+                                            type: array
+                                            items:
+                                                type: object
+                                                properties:
+                                                    id:
+                                                        type: string
+                                                        format: uuid
+                                                    number:
+                                                        type: integer
+                                                    class:
+                                                        type: object
+                                                        properties:
+                                                            id:
+                                                                type: integer
+                                                            name:
+                                                                type: string
+                                                                minLength: 1
+                                                                maxLength: 1
+                                                            course:
+                                                                type: object
+                                                                properties:
+                                                                    id:
+                                                                        type: integer
+                                                                    name:
+                                                                        type: string
+                                                                    year:
+                                                                        type: integer
+                                                                required:
+                                                                    - id
+                                                                    - name
+                                                                    - year
+                                                        required:
+                                                            - id
+                                                            - name
+                                                            - course
+                                                    created_at:
+                                                        type: string
+                                                        format: date-time
+                                                    updated_at:
+                                                        type: string
+                                                        format: date-time
+                                                required:
+                                                    - id
+                                                    - number
+                                                    - class
                                                     - created_at
                                                     - updated_at
