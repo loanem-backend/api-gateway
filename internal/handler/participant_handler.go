@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/loanem-backend/api-gateway/internal/dto"
 	"github.com/loanem-backend/api-gateway/pkg/respx"
 	pbparticipant "github.com/loanem-backend/protos/pb/proto/services/participant/v1"
 )
@@ -34,7 +35,7 @@ func (h *ParticipantHandler) CreateClasses(c *gin.Context) {
 		return
 	}
 
-	req.CourseId = int32(idParam)
+	req.CourseId = idParam
 
 	ctx := setLoginDataToContext(c)
 
@@ -49,4 +50,29 @@ func (h *ParticipantHandler) CreateClasses(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, respx.ResponseSucceed("Classes successfully created", nil))
+}
+
+func (h *ParticipantHandler) GetClassesByCourse(c *gin.Context) {
+	idParam, err := parseIntParam(c, "courseId")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid param", err))
+		return
+	}
+
+	req := pbparticipant.GetClassesByCourseIDRequest{
+		CourseId: idParam,
+	}
+
+	resp, err := h.teamClient.GetClassesByCourseID(c, &req)
+	if err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed fetching classes", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, respx.ResponseSucceed("Classes successfully retrieved", dto.GetClassesByCourseIDResponseToClassResponses(resp)))
 }

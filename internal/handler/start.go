@@ -58,4 +58,5 @@ func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler, ch *Cou
 	r.POST("/toolkits", middleware.Auth(ac), ih.CreateToolkit)
 
 	r.POST("/courses/:courseId/classes", middleware.Auth(ac), ph.CreateClasses)
+	r.GET("/courses/:courseId/classes", ph.GetClassesByCourse)
 }
