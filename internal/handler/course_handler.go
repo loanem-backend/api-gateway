@@ -51,7 +51,7 @@ func (h *CourseHandler) Remove(c *gin.Context) {
 	}
 
 	req := pbcourse.RemoveCourseRequest{
-		Id: int32(idParam),
+		Id: idParam,
 	}
 
 	ctx := setLoginDataToContext(c)
