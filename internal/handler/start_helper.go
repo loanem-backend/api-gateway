@@ -12,7 +12,7 @@ func serviceAddr(idx serviceIdx) string {
 
 	addr := config.GetEnv(sNameUpper+"_SERV_ADDR", sName+"-service")
 
-	port := config.GetEnv(sNameUpper+"_SERV_PORT", "50051")
+	port := config.GetEnv(sNameUpper+"_SERV_PORT", "")
 
 	return addr + ":" + port
 }

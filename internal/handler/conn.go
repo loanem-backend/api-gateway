@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func InitConnections() (*grpc.ClientConn, *grpc.ClientConn, *grpc.ClientConn) {
+func InitConnections() (*grpc.ClientConn, *grpc.ClientConn, *grpc.ClientConn, *grpc.ClientConn) {
 	authConn, err := grpc.NewClient(serviceAddr(auth), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		panic(fmt.Errorf("failed connecting to services: %w", err))
@@ -24,7 +24,12 @@ func InitConnections() (*grpc.ClientConn, *grpc.ClientConn, *grpc.ClientConn) {
 		panic(fmt.Errorf("failed connecting to services: %w", err))
 	}
 
-	return authConn, courseConn, inventoryConn
+	participantConn, err := grpc.NewClient(serviceAddr(participant), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		panic(fmt.Errorf("failed connecting to services: %w", err))
+	}
+
+	return authConn, courseConn, inventoryConn, participantConn
 }
 
 func CloseConnections(conns ...*grpc.ClientConn) {
