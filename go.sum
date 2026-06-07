@@ -49,6 +49,12 @@ github.com/loanem-backend/protos v0.0.0-20260526063809-f8fcdc6321b7 h1:lOeVmNqNz
 github.com/loanem-backend/protos v0.0.0-20260526063809-f8fcdc6321b7/go.mod h1:WeVOgyBItLRSJ1mgjcFcGWvvKgpTEoaYxCWHUtUr0fA=
 github.com/loanem-backend/protos v0.0.0-20260603085735-faa9afd76d38 h1:1u3xcKysVmisFqq7GPxfy8KaO+8hQCay4lb9ljkBvmE=
 github.com/loanem-backend/protos v0.0.0-20260603085735-faa9afd76d38/go.mod h1:WeVOgyBItLRSJ1mgjcFcGWvvKgpTEoaYxCWHUtUr0fA=
+github.com/loanem-backend/protos v0.0.0-20260605153647-b5bded6c3435 h1:yLk2lRxy2tzT5EtZ3TlnkCJFp3lXRPEjDRciZYma2No=
+github.com/loanem-backend/protos v0.0.0-20260605153647-b5bded6c3435/go.mod h1:WeVOgyBItLRSJ1mgjcFcGWvvKgpTEoaYxCWHUtUr0fA=
+github.com/loanem-backend/protos v0.0.0-20260606045508-5054d01e5f14 h1:tKvkNu6KgPhnzHIL4lgVZzB2gu37e/GQGqRuZ47paP0=
+github.com/loanem-backend/protos v0.0.0-20260606045508-5054d01e5f14/go.mod h1:WeVOgyBItLRSJ1mgjcFcGWvvKgpTEoaYxCWHUtUr0fA=
+github.com/loanem-backend/protos v0.0.0-20260607030806-9a7c6df8fff9 h1:cIeRPijLwOq3Xpn0Bfy2PV5ApLiNPuKKzsiEhNW/e9M=
+github.com/loanem-backend/protos v0.0.0-20260607030806-9a7c6df8fff9/go.mod h1:WeVOgyBItLRSJ1mgjcFcGWvvKgpTEoaYxCWHUtUr0fA=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=

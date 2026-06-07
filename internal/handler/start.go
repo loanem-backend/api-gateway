@@ -8,22 +8,24 @@ import (
 	pbauth "github.com/loanem-backend/protos/pb/proto/services/auth/v1"
 	pbcourse "github.com/loanem-backend/protos/pb/proto/services/course/v1"
 	pbinventory "github.com/loanem-backend/protos/pb/proto/services/inventory/v1"
+	pbparticipant "github.com/loanem-backend/protos/pb/proto/services/participant/v1"
 	"google.golang.org/grpc"
 )
 
-func Start(ge *gin.Engine, ac *grpc.ClientConn, cc *grpc.ClientConn, ic *grpc.ClientConn) {
+func Start(ge *gin.Engine, ac *grpc.ClientConn, cc *grpc.ClientConn, ic *grpc.ClientConn, pc *grpc.ClientConn) {
 	var (
 		authClient       = pbauth.NewAuthServiceClient(ac)
 		assistantClient  = pbauth.NewAssistantServiceClient(ac)
 		courseClient     = pbcourse.NewCourseServiceClient(cc)
 		instrumentClient = pbinventory.NewInstrumentServiceClient(ic)
 		toolkitClient    = pbinventory.NewToolkitServiceClient(ic)
+		teamClient       = pbparticipant.NewTeamServiceClient(pc)
 	)
 
-	ah, ch, ih := initHandlers(authClient, assistantClient, courseClient, instrumentClient, toolkitClient)
+	ah, ch, ih, ph := initHandlers(authClient, assistantClient, courseClient, instrumentClient, toolkitClient, teamClient)
 
 	r := ge.Use(middleware.Timeout(2 * time.Second))
-	routes(r, authClient, ah, ch, ih)
+	routes(r, authClient, ah, ch, ih, ph)
 }
 
 func initHandlers(
@@ -32,15 +34,19 @@ func initHandlers(
 	cc pbcourse.CourseServiceClient,
 	ic pbinventory.InstrumentServiceClient,
 	tc pbinventory.ToolkitServiceClient,
-) (*AuthHandler, *CourseHandler, *InventoryHandler) {
-	authHand := NewAuthHandler(ac, asc)
-	courseHand := NewCourseHandler(cc)
-	inventoryHand := NewInventoryHandler(ic, tc)
+	tmc pbparticipant.TeamServiceClient,
+) (*AuthHandler, *CourseHandler, *InventoryHandler, *ParticipantHandler) {
+	var (
+		authHand        = NewAuthHandler(ac, asc)
+		courseHand      = NewCourseHandler(cc)
+		inventoryHand   = NewInventoryHandler(ic, tc)
+		participantHand = NewParticipantHandler(tmc, nil)
+	)
 
-	return authHand, courseHand, inventoryHand
+	return authHand, courseHand, inventoryHand, participantHand
 }
 
-func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler, ch *CourseHandler, ih *InventoryHandler) {
+func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler, ch *CourseHandler, ih *InventoryHandler, ph *ParticipantHandler) {
 	r.POST("/login", ah.Login)
 	r.POST("/assistants", ah.Create)
 	r.PATCH("/me/password", middleware.Auth(ac), ah.SetPassword)
@@ -50,4 +56,6 @@ func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler, ch *Cou
 
 	r.POST("/instruments", middleware.Auth(ac), ih.CreateInstrument)
 	r.POST("/toolkits", middleware.Auth(ac), ih.CreateToolkit)
+
+	r.POST("/courses/:courseId/classes", middleware.Auth(ac), ph.CreateClasses)
 }
