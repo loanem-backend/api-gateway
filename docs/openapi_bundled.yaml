@@ -369,41 +369,43 @@ paths:
                                     - type: object
                                       properties:
                                         data:
-                                            type: array
-                                            items:
-                                                type: object
-                                                properties:
-                                                    id:
-                                                        type: integer
-                                                    name:
-                                                        type: string
-                                                        minLength: 1
-                                                        maxLength: 1
-                                                    course:
+                                            type: object
+                                            properties:
+                                                course:
+                                                    type: object
+                                                    properties:
+                                                        id:
+                                                            type: integer
+                                                        name:
+                                                            type: string
+                                                        year:
+                                                            type: integer
+                                                    required:
+                                                        - id
+                                                        - name
+                                                        - year
+                                                classes:
+                                                    type: array
+                                                    items:
                                                         type: object
                                                         properties:
                                                             id:
                                                                 type: integer
                                                             name:
                                                                 type: string
-                                                            year:
-                                                                type: integer
+                                                                minLength: 1
+                                                                maxLength: 1
+                                                            created_at:
+                                                                type: string
+                                                                format: date-time
+                                                            updated_at:
+                                                                type: string
+                                                                format: date-time
                                                         required:
                                                             - id
                                                             - name
-                                                            - year
-                                                    created_at:
-                                                        type: string
-                                                        format: date-time
-                                                    updated_at:
-                                                        type: string
-                                                        format: date-time
-                                                required:
-                                                    - id
-                                                    - name
-                                                    - course
-                                                    - created_at
-                                                    - updated_at
+                                                            - created_at
+                                                            - updated_at
     /classes/{classID}/teams:
         post:
             tags:

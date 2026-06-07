@@ -37,6 +37,11 @@ get:
               - type: object
                 properties:
                   data:
-                    type: array
-                    items:
-                      $ref: ../../components/schema/class.yaml#/ClassWithCourse
+                    type: object
+                    properties:
+                      course:
+                        $ref: ../../components/schema/course.yaml#/WithCourse
+                      classes:
+                        type: array
+                        items:
+                          $ref: ../../components/schema/class.yaml#/ClassNoCourse
