@@ -343,6 +343,8 @@ paths:
         get:
             tags:
                 - participant
+            security:
+                - {}
             parameters:
                 - in: path
                   name: courseID

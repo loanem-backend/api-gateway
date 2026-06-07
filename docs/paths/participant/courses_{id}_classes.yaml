@@ -24,6 +24,8 @@ post:
 
 get:
   tags: [participant]
+  security:
+    - {}
   parameters:
     - $ref: ../../components/parameter/course.yaml#/CourseIDParam
   responses:
