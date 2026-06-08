@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/loanem-backend/api-gateway/internal/dto"
+	"github.com/loanem-backend/api-gateway/internal/service"
 	"github.com/loanem-backend/api-gateway/pkg/respx"
 	pbinventory "github.com/loanem-backend/protos/pb/proto/services/inventory/v1"
 )
@@ -13,12 +14,14 @@ import (
 type InventoryHandler struct {
 	instrumentClient pbinventory.InstrumentServiceClient
 	toolkitClient    pbinventory.ToolkitServiceClient
+	storageServ      service.StorageService
 }
 
-func NewInventoryHandler(ic pbinventory.InstrumentServiceClient, tc pbinventory.ToolkitServiceClient) *InventoryHandler {
+func NewInventoryHandler(ic pbinventory.InstrumentServiceClient, tc pbinventory.ToolkitServiceClient, ss service.StorageService) *InventoryHandler {
 	return &InventoryHandler{
 		instrumentClient: ic,
 		toolkitClient:    tc,
+		storageServ:      ss,
 	}
 }
 
@@ -66,4 +69,60 @@ func (h *InventoryHandler) CreateToolkit(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, respx.ResponseSucceed("Toolkit successfully created", dto.NewCreateToolkitResponse(resp)))
+}
+
+func (h *InventoryHandler) GetAllInstruments(c *gin.Context) {
+	resp, err := h.instrumentClient.GetAllInstruments(c, &pbinventory.GetAllInstrumentsRequest{})
+	if err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed fetching instruments", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, respx.ResponseSucceed("Instruments successfully retrieved", dto.GetAllInstrumentsResponseToInstrumentResponses(resp)))
+}
+
+func (h *InventoryHandler) SetInstrumentPicture(c *gin.Context) {
+	idParam, err := parseIntParam(c, "instrumentId")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid param", err))
+		return
+	}
+
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed parsing file", err))
+		return
+	}
+
+	keyData, err := h.storageServ.StoreInstrumentPicture(c, idParam, service.FileInfo{
+		Dir:    string(service.FileKindInstrument),
+		Header: header,
+		File:   &file,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed storing picture", err))
+		return
+	}
+
+	ctx := setLoginDataToContext(c)
+
+	if _, err := h.instrumentClient.SetInstrumentPicture(ctx, &pbinventory.SetInstrumentPictureRequest{
+		Id:  idParam,
+		Key: keyData,
+	}); err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed updating instrument picture", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, respx.ResponseSucceed("Instrument successfully updated", nil))
 }
