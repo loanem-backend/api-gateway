@@ -63,6 +63,7 @@ func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler, ch *Cou
 
 	r.POST("/toolkits", middleware.Auth(ac), ih.CreateToolkit)
 	r.POST("/instruments", middleware.Auth(ac), ih.CreateInstrument)
+	r.GET("/instruments", ih.GetAllInstruments)
 	r.PATCH("/instruments/:instrumentId/picture", middleware.Auth(ac), ih.SetInstrumentPicture)
 
 	r.POST("/courses/:courseId/classes", middleware.Auth(ac), ph.CreateClasses)

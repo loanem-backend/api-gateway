@@ -71,6 +71,21 @@ func (h *InventoryHandler) CreateToolkit(c *gin.Context) {
 	c.JSON(http.StatusCreated, respx.ResponseSucceed("Toolkit successfully created", dto.NewCreateToolkitResponse(resp)))
 }
 
+func (h *InventoryHandler) GetAllInstruments(c *gin.Context) {
+	resp, err := h.instrumentClient.GetAllInstruments(c, &pbinventory.GetAllInstrumentsRequest{})
+	if err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed fetching instruments", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, respx.ResponseSucceed("Instruments successfully retrieved", dto.GetAllInstrumentsResponseToInstrumentResponses(resp)))
+}
+
 func (h *InventoryHandler) SetInstrumentPicture(c *gin.Context) {
 	idParam, err := parseIntParam(c, "instrumentId")
 	if err != nil {
