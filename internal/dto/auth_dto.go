@@ -3,12 +3,14 @@ package dto
 import pbauth "github.com/loanem-backend/protos/pb/proto/services/auth/v1"
 
 type LoginResponse struct {
-	Token string `json:"token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 func NewLoginResponse(resp *pbauth.LoginResponse) *LoginResponse {
 	return &LoginResponse{
-		Token: resp.GetToken(),
+		AccessToken:  resp.GetAccessToken(),
+		RefreshToken: resp.GetRefreshToken(),
 	}
 }
 

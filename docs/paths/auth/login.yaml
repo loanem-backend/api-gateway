@@ -23,4 +23,10 @@ post:
               - type: object
                 properties:
                   data:
-                    $ref: '../../components/schema/general.yaml#/TokenString'
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                      refresh_token:
+                        type: string
+                     

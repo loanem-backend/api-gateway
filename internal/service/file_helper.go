@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	"mime/multipart"
-	"path/filepath"
+	"path"
 	"strings"
 )
 
@@ -27,5 +27,5 @@ func constructKeyFromFileName(kind fileKind, id any, file FileInfo) (string, err
 	}
 	ext := nameSplits[splitCount-1]
 
-	return filepath.Join("instrument", fmt.Sprintf("%d.%s", id, ext)), nil
+	return path.Join("instrument", fmt.Sprintf("%d.%s", id, ext)), nil
 }
