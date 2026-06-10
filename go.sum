@@ -102,6 +102,8 @@ github.com/loanem-backend/protos v0.0.0-20260609164841-dd691cc9c050 h1:TGicqxL+d
 github.com/loanem-backend/protos v0.0.0-20260609164841-dd691cc9c050/go.mod h1:JqvDnGNSyNkkARChzi0qqK3sl/0nJjB+ny5/DvjG49Q=
 github.com/loanem-backend/protos v0.0.0-20260609180731-723de8e81ba5 h1:BsdpTZUI36RwFgE5Yx5oJQQz/WNmMKCDAlXzTzHHj9Y=
 github.com/loanem-backend/protos v0.0.0-20260609180731-723de8e81ba5/go.mod h1:JqvDnGNSyNkkARChzi0qqK3sl/0nJjB+ny5/DvjG49Q=
+github.com/loanem-backend/protos v0.0.0-20260610121058-8224e62935b9 h1:uNo6oNG0kv2teGXNqyEffWp6OgVTMTzxnMN6q7OP7LY=
+github.com/loanem-backend/protos v0.0.0-20260610121058-8224e62935b9/go.mod h1:JqvDnGNSyNkkARChzi0qqK3sl/0nJjB+ny5/DvjG49Q=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=

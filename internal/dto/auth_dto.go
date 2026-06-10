@@ -6,9 +6,9 @@ type LoginResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-func NewLoginResponse(resp *pbauth.LoginResponse) *LoginResponse {
+func NewLoginResponse(token string) *LoginResponse {
 	return &LoginResponse{
-		AccessToken: resp.GetAccessToken(),
+		AccessToken: token,
 	}
 }
 

@@ -55,8 +55,8 @@ func initHandlers(
 
 func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler, ch *CourseHandler, ih *InventoryHandler, ph *ParticipantHandler) {
 	r.POST("/login", ah.Login)
-	// r.POST("/login/refresh", ah.)
-	r.POST("/logout", ah.Logout)
+	r.POST("/login/refresh", ah.RefreshToken)
+	r.POST("/logout", middleware.Auth(ac, getAuthorization), ah.Logout)
 	r.POST("/assistants", ah.Create)
 	r.PATCH("/me/password", middleware.Auth(ac, getAuthorization), ah.SetPassword)
 

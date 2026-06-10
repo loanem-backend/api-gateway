@@ -50,7 +50,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		int(resp.GetRefreshExpirationHour())*3600, "/", "", false, true,
 	)
 
-	c.JSON(http.StatusCreated, respx.ResponseSucceed("Logged in successfully", dto.NewLoginResponse(resp)))
+	c.JSON(http.StatusCreated, respx.ResponseSucceed("Logged in successfully", dto.NewLoginResponse(resp.GetAccessToken())))
 }
 
 const cookieNameRefreshToken = "refresh_token"
@@ -124,6 +124,9 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 
 	refreshToken, err := c.Cookie(cookieNameRefreshToken)
 	if err != nil {
+
+		// tidak jadi eror
+
 		c.JSON(http.StatusUnauthorized, respx.ResponseFail("refresh token not found", errors.New("missing cookie")))
 		return
 	}
@@ -144,4 +147,32 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, respx.ResponseSucceed("Successfully logged out", nil))
+}
+
+func (h *AuthHandler) RefreshToken(c *gin.Context) {
+	refreshToken, err := c.Cookie(cookieNameRefreshToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, respx.ResponseFail("refresh token not found", errors.New("missing cookie")))
+		return
+	}
+
+	resp, err := h.authClient.RefreshToken(c, &pbauth.RefreshTokenRequest{
+		RefreshToken: refreshToken,
+	})
+	if err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed generating token", err))
+		return
+	}
+
+	c.SetCookie(
+		cookieNameRefreshToken, resp.GetRefreshToken(),
+		int(resp.GetRefreshExpirationHour())*3600, "/", "", false, true,
+	)
+
+	c.JSON(http.StatusCreated, respx.ResponseSucceed("Successfully logged in", dto.NewLoginResponse(resp.GetAccessToken())))
 }
