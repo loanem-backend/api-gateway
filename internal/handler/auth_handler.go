@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/loanem-backend/api-gateway/internal/dto"
@@ -43,8 +45,15 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	c.SetCookie(
+		cookieNameRefreshToken, resp.GetRefreshToken(),
+		int(resp.GetRefreshExpirationHour())*3600, "/", "", false, true,
+	)
+
 	c.JSON(http.StatusCreated, respx.ResponseSucceed("Logged in successfully", dto.NewLoginResponse(resp)))
 }
+
+const cookieNameRefreshToken = "refresh_token"
 
 func (h *AuthHandler) Create(c *gin.Context) {
 	var req pbauth.CreateAssistantRequest
@@ -91,4 +100,48 @@ func (h *AuthHandler) SetPassword(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, respx.ResponseSucceed("Assistant successfully updated", nil))
+}
+
+func getAuthorization(c *gin.Context) (string, error) {
+	header := c.GetHeader("Authorization")
+	if header == "" {
+		return "", errors.New("missing authorization header")
+	}
+
+	parts := strings.SplitN(header, " ", 2)
+	if !(len(parts) == 2 && parts[0] == "Bearer") {
+		return "", errors.New("invalid token")
+	}
+
+	return parts[1], nil
+}
+
+func (h *AuthHandler) Logout(c *gin.Context) {
+	accessToken, err := getAuthorization(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, respx.ResponseFail("unauthorized", err))
+	}
+
+	refreshToken, err := c.Cookie(cookieNameRefreshToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, respx.ResponseFail("refresh token not found", errors.New("missing cookie")))
+		return
+	}
+
+	ctx := setLoginDataToContext(c)
+
+	if _, err := h.authClient.Logout(ctx, &pbauth.LogoutRequest{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}); err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed logging out", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, respx.ResponseSucceed("Successfully logged out", nil))
 }
