@@ -124,11 +124,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 
 	refreshToken, err := c.Cookie(cookieNameRefreshToken)
 	if err != nil {
-
-		// tidak jadi eror
-
-		c.JSON(http.StatusUnauthorized, respx.ResponseFail("refresh token not found", errors.New("missing cookie")))
-		return
+		refreshToken = ""
 	}
 
 	ctx := setLoginDataToContext(c)
