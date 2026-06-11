@@ -55,10 +55,10 @@ paths:
                                         data:
                                             type: object
                                             properties:
-                                                token:
+                                                access_token:
                                                     type: string
-                                            required:
-                                                - token
+                                                refresh_token:
+                                                    type: string
     /courses:
         post:
             tags:

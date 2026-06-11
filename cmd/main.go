@@ -20,9 +20,11 @@ func main() {
 
 	r := gin.Default()
 
+	storageClient := config.InitStorageClient()
+
 	authConn, courseConn, inventoryConn, participantConn := handler.InitConnections()
 
-	handler.Start(r, authConn, courseConn, inventoryConn, participantConn)
+	handler.Start(r, authConn, courseConn, inventoryConn, participantConn, storageClient)
 
 	port := config.GetEnv("APP_PORT", "8080")
 	srv := &http.Server{

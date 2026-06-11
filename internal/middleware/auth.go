@@ -3,29 +3,18 @@ package middleware
 import (
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/loanem-backend/api-gateway/pkg/respx"
 	pbauth "github.com/loanem-backend/protos/pb/proto/services/auth/v1"
 )
 
-func Auth(ac pbauth.AuthServiceClient) gin.HandlerFunc {
+func Auth(ac pbauth.AuthServiceClient, authFn func(c *gin.Context) (string, error)) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		header := ctx.GetHeader("Authorization")
-		if header == "" {
+		accessToken, err := authFn(ctx)
+		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, respx.ResponseFail(
-				"unauthorized",
-				errors.New("missing authorization header"),
-			))
-			return
-		}
-
-		parts := strings.SplitN(header, " ", 2)
-		if !(len(parts) == 2 && parts[0] == "Bearer") {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, respx.ResponseFail(
-				"unauthorized",
-				errors.New("invalid token"),
+				"unauthorized", err,
 			))
 			return
 		}
@@ -33,7 +22,7 @@ func Auth(ac pbauth.AuthServiceClient) gin.HandlerFunc {
 		resp, err := ac.ValidateToken(
 			ctx,
 			&pbauth.ValidateTokenRequest{
-				Token: parts[1],
+				AccessToken: accessToken,
 			},
 		)
 		if err != nil {
