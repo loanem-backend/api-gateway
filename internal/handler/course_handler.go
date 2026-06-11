@@ -31,7 +31,7 @@ func (h *CourseHandler) Create(c *gin.Context) {
 
 	resp, err := h.courseClient.AddCourse(ctx, &req)
 	if err != nil {
-		if c.Err() == context.DeadlineExceeded {
+		if err == context.DeadlineExceeded || c.Request.Context().Err() == context.DeadlineExceeded {
 			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
 			return
 		}

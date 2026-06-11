@@ -29,3 +29,16 @@ func parseIntParam(c *gin.Context, param string) (int32, error) {
 
 	return int32(intVal), nil
 }
+
+const (
+	strContentType     = "Content-Type"
+	strApplicationJSON = "application/json"
+)
+
+func mockAuthMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.Set("id", int32(99))
+		ctx.Set("name", "Arvin Fernanda")
+		ctx.Next()
+	}
+}
