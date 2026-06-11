@@ -1,0 +1,42 @@
+post:
+  tags: [inventory]
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+  responses:
+    '201':
+      description: Instrument successfully created.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/schema/general.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  data:
+                    $ref: '../../components/schema/general.yaml#/IdInt'
+
+get:
+  tags: [inventory]
+  responses:
+    '200':
+      description: Instruments successfully retrieved.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/schema/general.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '../../components/schema/instrument.yaml#/Instrument'

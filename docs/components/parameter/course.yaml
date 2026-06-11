@@ -1,0 +1,7 @@
+CourseIDParam:
+  in: path
+  name: courseID
+  schema:
+    type: integer
+  required: true
+  description: Numeric ID as the class(es)' parent course.

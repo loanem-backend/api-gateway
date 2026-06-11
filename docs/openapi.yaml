@@ -19,6 +19,7 @@ tags:
   - name: auth
   - name: course
   - name: inventory
+  - name: participant
 
 paths:
   /login:
@@ -29,3 +30,9 @@ paths:
     $ref: './docs/paths/course/courses_{id}.yaml'
   /toolkits:
     $ref: './docs/paths/inventory/toolkits.yaml'
+  /instruments:
+    $ref: './docs/paths/inventory/instruments.yaml'
+  /courses/{courseID}/classes:
+    $ref: './docs/paths/participant/courses_{id}_classes.yaml'
+  /classes/{classID}/teams:
+    $ref: ./docs/paths/participant/classes_id_teams.yaml

@@ -1,0 +1,46 @@
+post:
+  tags: [participant]
+  security:
+    - BearerAuth: []
+  parameters:
+    - in: path
+      name: classID
+      schema:
+        type: integer
+      required: true
+      description: Numeric ID of the class to be related to.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            number_of_teams:
+              type: integer
+  responses:
+    '201':
+      description: Classes successfully created.
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schema/general.yaml#/SuccessResponse
+
+get:
+  tags: [participant]
+  parameters:
+    - $ref: ../../components/parameter/class.yaml#/ClassIDParam
+  responses:
+    '200':
+      description: Teams successfully retrieved.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: ../../components/schema/general.yaml#/SuccessResponse
+              - type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: ../../components/schema/team.yaml#/TeamWithClass

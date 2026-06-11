@@ -1,0 +1,49 @@
+ClassWithCourse:
+  type: object
+  properties:
+    id:
+      type: integer
+    name:
+      type: string
+      minLength: 1
+      maxLength: 1
+    course:
+      $ref: ../../components/schema/course.yaml#/WithCourse
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+  required: [id, name, course, created_at, updated_at]
+
+WithClass:
+  type: object
+  properties:
+    id:
+      type: integer
+    name:
+      type: string
+      minLength: 1
+      maxLength: 1
+    course:
+      $ref: ../../components/schema/course.yaml#/WithCourse
+  required: [id, name, course]
+
+ClassNoCourse:
+  type: object
+  properties:
+    id:
+      type: integer
+    name:
+      type: string
+      minLength: 1
+      maxLength: 1
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+  required: [id, name, created_at, updated_at]
+      

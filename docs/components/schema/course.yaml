@@ -1,0 +1,10 @@
+WithCourse:
+  type: object
+  properties:
+    id:
+      type: integer
+    name:
+      type: string
+    year:
+      type: integer
+  required: [id, name, year]
