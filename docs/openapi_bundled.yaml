@@ -57,8 +57,69 @@ paths:
                                             properties:
                                                 access_token:
                                                     type: string
-                                                refresh_token:
+    /login/refresh:
+        post:
+            tags:
+                - auth
+            security: []
+            parameters:
+                - in: cookie
+                  name: refresh_token
+                  schema:
+                    type: string
+                    format: uuid
+                  required: true
+                  description: Session cookie for token refreshing.
+            responses:
+                '201':
+                    description: Successfully logged in.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - type: object
+                                      properties:
+                                        success:
+                                            type: boolean
+                                        message:
+                                            type: string
+                                      required:
+                                        - success
+                                        - message
+                                    - type: object
+                                      properties:
+                                        data:
+                                            type: object
+                                            properties:
+                                                access_token:
                                                     type: string
+    /logout:
+        post:
+            tags:
+                - auth
+            parameters:
+                - in: cookie
+                  name: refresh_token
+                  schema:
+                    type: string
+                    format: uuid
+                  required: true
+                  description: Session cookie for token refreshing.
+            responses:
+                '200':
+                    description: Successfully logged out.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                    message:
+                                        type: string
+                                required:
+                                    - success
+                                    - message
     /courses:
         post:
             tags:

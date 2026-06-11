@@ -24,6 +24,10 @@ tags:
 paths:
   /login:
     $ref: './docs/paths/auth/login.yaml'
+  /login/refresh:
+    $ref: './docs/paths/auth/login_refresh.yaml'
+  /logout:
+    $ref: './docs/paths/auth/logout.yaml'
   /courses:
     $ref: './docs/paths/course/courses.yaml'
   /courses/{courseID}:
