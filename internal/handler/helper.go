@@ -2,10 +2,15 @@ package handler
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/loanem-backend/api-gateway/pkg/respx"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 func setLoginDataToContext(c *gin.Context) context.Context {
@@ -28,6 +33,25 @@ func parseIntParam(c *gin.Context, param string) (int32, error) {
 	}
 
 	return int32(intVal), nil
+}
+
+func handleErrorFromClient(c *gin.Context, err error) {
+	cErr := c.Request.Context().Err()
+	if errors.Is(cErr, context.DeadlineExceeded) {
+		c.JSON(http.StatusRequestTimeout, respx.ResponseFail(messageRequestTimeout, cErr))
+		return
+	}
+	if errors.Is(cErr, context.Canceled) {
+		c.JSON(httpStatusClientClosedRequest, respx.ResponseFail(messageClientClosedRequest, cErr))
+		return
+	}
+
+	if errors.Is(err, context.DeadlineExceeded) || status.Code(err) == codes.DeadlineExceeded {
+		c.JSON(http.StatusGatewayTimeout, respx.ResponseFail(messageServiceTimeout, err))
+		return
+	}
+
+	c.JSON(http.StatusInternalServerError, respx.ResponseFail(messageInternalServerError, err))
 }
 
 const (

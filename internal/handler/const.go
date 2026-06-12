@@ -1,9 +1,15 @@
 package handler
 
 const (
-	messageServiceTimeout = "service timeout"
-	messageInvalidBody    = "invalid body"
+	messageRequestTimeout      = "request timeout"
+	messageClientClosedRequest = "request canceled"
+	messageServiceTimeout      = "service timeout"
+	messageInvalidBody         = "invalid body"
+	messageInternalServerError = "internal server error"
 
-	messageCreateCourseFailed  = "failed creating course"
 	messageCreateCourseSucceed = "Course successfully created"
+)
+
+const (
+	httpStatusClientClosedRequest = 499
 )

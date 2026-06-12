@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,12 +30,7 @@ func (h *CourseHandler) Create(c *gin.Context) {
 
 	resp, err := h.courseClient.AddCourse(ctx, dto.CreateCourseRequestDTOToPB(&req))
 	if err != nil {
-		if err == context.DeadlineExceeded || c.Request.Context().Err() == context.DeadlineExceeded {
-			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail(messageServiceTimeout, err))
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, respx.ResponseFail(messageCreateCourseFailed, err))
+		handleErrorFromClient(c, err)
 		return
 	}
 

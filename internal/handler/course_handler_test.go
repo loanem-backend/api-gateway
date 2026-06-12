@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,10 +22,16 @@ import (
 func TestCourseHandler_Create(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
+	validBody := &dto.CreateCourseRequest{
+		Name: "Course Test",
+		Year: 2025,
+	}
+
 	tests := []struct {
 		name         string
 		mockBehavior func(m *server_mock.MockCourseServiceClient)
 		body         any
+		mutateReq    func(req *http.Request) *http.Request
 		assertCase   func(t *testing.T, w *httptest.ResponseRecorder)
 	}{
 		{
@@ -36,10 +43,7 @@ func TestCourseHandler_Create(t *testing.T) {
 						Id: 51,
 					}, nil)
 			},
-			body: &pbcourse.AddCourseRequest{
-				Name: "Course Test",
-				Year: 1980,
-			},
+			body: validBody,
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusCreated, w.Code)
 				assert.Contains(t, w.Body.String(), messageCreateCourseSucceed)
@@ -89,20 +93,58 @@ func TestCourseHandler_Create(t *testing.T) {
 			},
 		},
 		{
+			name: "Failed_RequestTimeout",
+			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+				m.EXPECT().AddCourse(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+			},
+			body: validBody,
+			mutateReq: func(req *http.Request) *http.Request {
+				ctx, cancel := context.WithTimeout(req.Context(), 0)
+				defer cancel()
+
+				return req.WithContext(ctx)
+			},
+			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusRequestTimeout, w.Code)
+				strBody := w.Body.String()
+				assert.NotContains(t, strBody, messageInvalidBody)
+				assert.Contains(t, strBody, messageRequestTimeout)
+			},
+		},
+		{
+			name: "Failed_RequestCanceled",
+			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+				m.EXPECT().AddCourse(gomock.Any(), gomock.Any()).Return(nil, context.Canceled)
+			},
+			body: validBody,
+			mutateReq: func(req *http.Request) *http.Request {
+				ctx, cancel := context.WithCancel(req.Context())
+				cancel()
+
+				return req.WithContext(ctx)
+			},
+			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.Equal(t, httpStatusClientClosedRequest, w.Code)
+				strBody := w.Body.String()
+				assert.NotContains(t, strBody, messageInvalidBody)
+				assert.NotContains(t, strBody, messageRequestTimeout)
+				assert.Contains(t, strBody, messageClientClosedRequest)
+			},
+		},
+		{
 			name: "Failed_gRPCTimeout",
 			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
 				m.EXPECT().
 					AddCourse(gomock.Any(), gomock.Any()).
-					Return(nil, context.DeadlineExceeded)
+					Return(nil, status.Error(codes.DeadlineExceeded, messageServiceTimeout))
 			},
-			body: &dto.CreateCourseRequest{
-				Name: "Course Test",
-				Year: 2025,
-			},
+			body: validBody,
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusGatewayTimeout, w.Code)
 				strBody := w.Body.String()
 				assert.NotContains(t, strBody, messageInvalidBody)
+				assert.NotContains(t, strBody, messageRequestTimeout)
+				assert.NotContains(t, strBody, messageClientClosedRequest)
 				assert.Contains(t, strBody, messageServiceTimeout)
 			},
 		},
@@ -113,16 +155,13 @@ func TestCourseHandler_Create(t *testing.T) {
 					AddCourse(gomock.Any(), gomock.Any()).
 					Return(nil, status.Error(codes.Internal, ""))
 			},
-			body: &dto.CreateCourseRequest{
-				Name: "Course Test",
-				Year: 2025,
-			},
+			body: validBody,
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
 				strBody := w.Body.String()
 				assert.NotContains(t, strBody, messageInvalidBody)
 				assert.NotContains(t, strBody, messageServiceTimeout)
-				assert.Contains(t, strBody, messageCreateCourseFailed)
+				assert.Contains(t, strBody, messageInternalServerError)
 			},
 		},
 	}
@@ -153,6 +192,10 @@ func TestCourseHandler_Create(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPost, "/courses", &b)
 			req.Header.Set(strContentType, strApplicationJSON)
+
+			if test.mutateReq != nil {
+				req = test.mutateReq(req)
+			}
 			c.Request = req
 
 			r.ServeHTTP(w, req)
