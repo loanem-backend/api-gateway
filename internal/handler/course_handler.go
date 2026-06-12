@@ -23,7 +23,7 @@ func NewCourseHandler(cc pbcourse.CourseServiceClient) *CourseHandler {
 func (h *CourseHandler) Create(c *gin.Context) {
 	var req dto.CreateCourseRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid body", err))
+		c.JSON(http.StatusBadRequest, respx.ResponseFail(messageInvalidBody, err))
 		return
 	}
 
@@ -32,15 +32,15 @@ func (h *CourseHandler) Create(c *gin.Context) {
 	resp, err := h.courseClient.AddCourse(ctx, dto.CreateCourseRequestDTOToPB(&req))
 	if err != nil {
 		if err == context.DeadlineExceeded || c.Request.Context().Err() == context.DeadlineExceeded {
-			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail(messageServiceTimeout, err))
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed creating course", err))
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail(messageCreateCourseFailed, err))
 		return
 	}
 
-	c.JSON(http.StatusCreated, respx.ResponseSucceed("Course successfully created", dto.NewCreateCourseResponse(resp)))
+	c.JSON(http.StatusCreated, respx.ResponseSucceed(messageCreateCourseSucceed, dto.NewCreateCourseResponse(resp)))
 }
 
 func (h *CourseHandler) Remove(c *gin.Context) {

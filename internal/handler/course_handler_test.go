@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +14,8 @@ import (
 	pbcourse "github.com/loanem-backend/protos/pb/proto/services/course/v1"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestCourseHandler_Create(t *testing.T) {
@@ -39,6 +42,7 @@ func TestCourseHandler_Create(t *testing.T) {
 			},
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusCreated, w.Code)
+				assert.Contains(t, w.Body.String(), messageCreateCourseSucceed)
 			},
 		},
 		{
@@ -51,7 +55,7 @@ func TestCourseHandler_Create(t *testing.T) {
 			body: "raw string",
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, w.Code)
-				assert.Contains(t, w.Body.String(), "invalid body")
+				assert.Contains(t, w.Body.String(), messageInvalidBody)
 			},
 		},
 		{
@@ -66,7 +70,7 @@ func TestCourseHandler_Create(t *testing.T) {
 			},
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, w.Code)
-				assert.Contains(t, w.Body.String(), "invalid body")
+				assert.Contains(t, w.Body.String(), messageInvalidBody)
 			},
 		},
 		{
@@ -81,7 +85,44 @@ func TestCourseHandler_Create(t *testing.T) {
 			},
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, w.Code)
-				assert.Contains(t, w.Body.String(), "invalid body")
+				assert.Contains(t, w.Body.String(), messageInvalidBody)
+			},
+		},
+		{
+			name: "Failed_gRPCTimeout",
+			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+				m.EXPECT().
+					AddCourse(gomock.Any(), gomock.Any()).
+					Return(nil, context.DeadlineExceeded)
+			},
+			body: &dto.CreateCourseRequest{
+				Name: "Course Test",
+				Year: 2025,
+			},
+			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusGatewayTimeout, w.Code)
+				strBody := w.Body.String()
+				assert.NotContains(t, strBody, messageInvalidBody)
+				assert.Contains(t, strBody, messageServiceTimeout)
+			},
+		},
+		{
+			name: "Failed_InternalServerError",
+			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+				m.EXPECT().
+					AddCourse(gomock.Any(), gomock.Any()).
+					Return(nil, status.Error(codes.Internal, ""))
+			},
+			body: &dto.CreateCourseRequest{
+				Name: "Course Test",
+				Year: 2025,
+			},
+			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				strBody := w.Body.String()
+				assert.NotContains(t, strBody, messageInvalidBody)
+				assert.NotContains(t, strBody, messageServiceTimeout)
+				assert.Contains(t, strBody, messageCreateCourseFailed)
 			},
 		},
 	}
