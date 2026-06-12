@@ -1,0 +1,8 @@
+RefreshTokenCookie:
+  in: cookie
+  name: refresh_token
+  schema:
+    type: string
+    format: uuid
+  required: true
+  description: Session cookie for token refreshing.

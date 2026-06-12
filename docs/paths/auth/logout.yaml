@@ -1,0 +1,11 @@
+post:
+  tags: [auth]
+  parameters:
+    - $ref: ../../components/parameter/refresh_token.yaml#/RefreshTokenCookie
+  responses:
+    '200':
+      description: Successfully logged out.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schema/general.yaml#/SuccessResponse'

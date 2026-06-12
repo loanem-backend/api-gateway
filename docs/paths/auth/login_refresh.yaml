@@ -1,17 +1,8 @@
 post:
   tags: [auth]
   security: []
-  requestBody:
-    required: true
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            phone:
-              type: string
-            password:
-              type: string
+  parameters:
+    - $ref: ../../components/parameter/refresh_token.yaml#/RefreshTokenCookie
   responses:
     '201':
       description: Successfully logged in.
@@ -24,4 +15,3 @@ post:
                 properties:
                   data:
                     $ref: ../../components/schema/general.yaml#/TokenResponse
-                     

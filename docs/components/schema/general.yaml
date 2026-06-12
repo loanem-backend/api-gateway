@@ -13,3 +13,9 @@ IdInt:
     id:
       type: integer
   required: [id]
+
+TokenResponse:
+  type: object
+  properties:
+    access_token:
+      type: string
