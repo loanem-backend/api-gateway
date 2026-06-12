@@ -6,6 +6,18 @@ import (
 	pbcourse "github.com/loanem-backend/protos/pb/proto/services/course/v1"
 )
 
+type CreateCourseRequest struct {
+	Name string `json:"name" binding:"required"`
+	Year int    `json:"year" binding:"required"`
+}
+
+func CreateCourseRequestDTOToPB(req *CreateCourseRequest) *pbcourse.AddCourseRequest {
+	return &pbcourse.AddCourseRequest{
+		Name: req.Name,
+		Year: int32(req.Year),
+	}
+}
+
 type CreateCourseResponse struct {
 	ID int `json:"id"`
 }

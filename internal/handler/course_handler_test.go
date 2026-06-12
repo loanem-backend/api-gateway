@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/loanem-backend/api-gateway/internal/dto"
 	server_mock "github.com/loanem-backend/api-gateway/internal/mocks/server"
 	pbcourse "github.com/loanem-backend/protos/pb/proto/services/course/v1"
 	"github.com/stretchr/testify/assert"
@@ -21,10 +22,10 @@ func TestCourseHandler_Create(t *testing.T) {
 		name         string
 		mockBehavior func(m *server_mock.MockCourseServiceClient)
 		body         any
-		code         int
+		assertCase   func(t *testing.T, w *httptest.ResponseRecorder)
 	}{
 		{
-			name: "Success - Created",
+			name: "Success_Created",
 			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
 				m.EXPECT().
 					AddCourse(gomock.Any(), gomock.Any()).
@@ -36,7 +37,52 @@ func TestCourseHandler_Create(t *testing.T) {
 				Name: "Course Test",
 				Year: 1980,
 			},
-			code: 201,
+			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusCreated, w.Code)
+			},
+		},
+		{
+			name: "Failed_InvalidBody",
+			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+				m.EXPECT().
+					AddCourse(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			body: "raw string",
+			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusBadRequest, w.Code)
+				assert.Contains(t, w.Body.String(), "invalid body")
+			},
+		},
+		{
+			name: "Failed_MissingNameField",
+			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+				m.EXPECT().
+					AddCourse(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			body: &dto.CreateCourseRequest{
+				Year: 2025,
+			},
+			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusBadRequest, w.Code)
+				assert.Contains(t, w.Body.String(), "invalid body")
+			},
+		},
+		{
+			name: "Failed_MissingYearField",
+			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+				m.EXPECT().
+					AddCourse(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			body: &dto.CreateCourseRequest{
+				Name: "Course Test",
+			},
+			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusBadRequest, w.Code)
+				assert.Contains(t, w.Body.String(), "invalid body")
+			},
 		},
 	}
 
@@ -70,7 +116,7 @@ func TestCourseHandler_Create(t *testing.T) {
 
 			r.ServeHTTP(w, req)
 
-			assert.Equal(t, test.code, w.Code)
+			test.assertCase(t, w)
 		})
 	}
 }

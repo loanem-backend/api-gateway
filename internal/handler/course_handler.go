@@ -21,7 +21,7 @@ func NewCourseHandler(cc pbcourse.CourseServiceClient) *CourseHandler {
 }
 
 func (h *CourseHandler) Create(c *gin.Context) {
-	var req pbcourse.AddCourseRequest
+	var req dto.CreateCourseRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid body", err))
 		return
@@ -29,7 +29,7 @@ func (h *CourseHandler) Create(c *gin.Context) {
 
 	ctx := setLoginDataToContext(c)
 
-	resp, err := h.courseClient.AddCourse(ctx, &req)
+	resp, err := h.courseClient.AddCourse(ctx, dto.CreateCourseRequestDTOToPB(&req))
 	if err != nil {
 		if err == context.DeadlineExceeded || c.Request.Context().Err() == context.DeadlineExceeded {
 			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
