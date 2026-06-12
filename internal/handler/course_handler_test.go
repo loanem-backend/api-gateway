@@ -204,3 +204,35 @@ func TestCourseHandler_Create(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkCourseHandler_Create(b *testing.B) {
+	ctrl := gomock.NewController(b)
+	defer ctrl.Finish()
+
+	mockCourseClient := server_mock.NewMockCourseServiceClient(ctrl)
+	h := NewCourseHandler(mockCourseClient)
+
+	mockCourseClient.EXPECT().
+		AddCourse(gomock.Any(), gomock.Any()).
+		Return(&pbcourse.AddCourseResponse{Id: 321}, nil).
+		AnyTimes()
+
+	validBody := []byte(`{"name":"Course Test","year":2025}`)
+
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.New()
+	r.Use(mockAuthMiddleware())
+	r.POST("/courses", h.Create)
+
+	for range b.N {
+		b.StopTimer()
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPost, "/courses", bytes.NewBuffer(validBody))
+		req.Header.Set(strContentType, strApplicationJSON)
+
+		b.StartTimer()
+
+		r.ServeHTTP(w, req)
+	}
+}
