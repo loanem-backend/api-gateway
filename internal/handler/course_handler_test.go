@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/loanem-backend/api-gateway/internal/dto"
@@ -95,15 +96,14 @@ func TestCourseHandler_Create(t *testing.T) {
 		{
 			name: "Failed_RequestTimeout",
 			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
-				m.EXPECT().AddCourse(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+				m.EXPECT().
+					AddCourse(gomock.Any(), gomock.Any()).
+					DoAndReturn(func(ctx context.Context, req any, opts ...any) (*pbcourse.AddCourseResponse, error) {
+						<-ctx.Done()
+						return nil, ctx.Err()
+					})
 			},
 			body: validBody,
-			mutateReq: func(req *http.Request) *http.Request {
-				ctx, cancel := context.WithTimeout(req.Context(), 0)
-				defer cancel()
-
-				return req.WithContext(ctx)
-			},
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusRequestTimeout, w.Code)
 				strBody := w.Body.String()
@@ -114,7 +114,9 @@ func TestCourseHandler_Create(t *testing.T) {
 		{
 			name: "Failed_RequestCanceled",
 			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
-				m.EXPECT().AddCourse(gomock.Any(), gomock.Any()).Return(nil, context.Canceled)
+				m.EXPECT().
+					AddCourse(gomock.Any(), gomock.Any()).
+					Return(nil, context.Canceled)
 			},
 			body: validBody,
 			mutateReq: func(req *http.Request) *http.Request {
@@ -180,6 +182,16 @@ func TestCourseHandler_Create(t *testing.T) {
 			c, r := gin.CreateTestContext(w)
 
 			r.Use(mockAuthMiddleware())
+
+			if strings.Contains(test.name, "RequestTimeout") {
+				r.Use(func(c *gin.Context) {
+					ctx, cancel := context.WithTimeout(c.Request.Context(), 1*time.Millisecond)
+					defer cancel()
+
+					c.Request = c.Request.WithContext(ctx)
+					c.Next()
+				})
+			}
 
 			r.POST("/courses", h.Create)
 
