@@ -25,23 +25,15 @@ func NewAuthHandler(ac pbauth.AuthServiceClient, asc pbauth.AssistantServiceClie
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
-	// ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
-	// defer cancel()
-
-	var req pbauth.LoginRequest
+	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid body", err))
 		return
 	}
 
-	resp, err := h.authClient.Login(c, &req)
+	resp, err := h.authClient.Login(c.Request.Context(), dto.LoginRequestDTOToPB(&req))
 	if err != nil {
-		if c.Err() == context.DeadlineExceeded {
-			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed logging in", err))
+		handleErrorFromClient(c, err)
 		return
 	}
 
@@ -50,7 +42,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		int(resp.GetRefreshExpirationHour())*3600, "/", "", false, true,
 	)
 
-	c.JSON(http.StatusCreated, respx.ResponseSucceed("Logged in successfully", dto.NewLoginResponse(resp.GetAccessToken())))
+	c.JSON(http.StatusCreated, respx.ResponseSucceed(messageLoginSucceed, dto.NewLoginResponse(resp.GetAccessToken())))
 }
 
 const cookieNameRefreshToken = "refresh_token"

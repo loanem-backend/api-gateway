@@ -7,6 +7,7 @@ const (
 	messageInvalidBody         = "invalid body"
 	messageInternalServerError = "internal server error"
 
+	messageLoginSucceed        = "Successfully logged in"
 	messageCreateCourseSucceed = "Course successfully created"
 )
 

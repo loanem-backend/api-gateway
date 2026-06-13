@@ -1,6 +1,20 @@
 package dto
 
-import pbauth "github.com/loanem-backend/protos/pb/proto/services/auth/v1"
+import (
+	pbauth "github.com/loanem-backend/protos/pb/proto/services/auth/v1"
+)
+
+type LoginRequest struct {
+	Phone    string `json:"phone" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+func LoginRequestDTOToPB(req *LoginRequest) *pbauth.LoginRequest {
+	return &pbauth.LoginRequest{
+		Phone:    req.Phone,
+		Password: req.Password,
+	}
+}
 
 type LoginResponse struct {
 	AccessToken string `json:"access_token"`

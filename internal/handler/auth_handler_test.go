@@ -13,48 +13,53 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loanem-backend/api-gateway/internal/dto"
 	server_mock "github.com/loanem-backend/api-gateway/internal/mocks/server"
-	pbcourse "github.com/loanem-backend/protos/pb/proto/services/course/v1"
+	pbauth "github.com/loanem-backend/protos/pb/proto/services/auth/v1"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func TestCourseHandler_Create(t *testing.T) {
+func TestAuthHandler_Login(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	validBody := &dto.CreateCourseRequest{
-		Name: "Course Test",
-		Year: 2025,
+	validBody := &dto.LoginRequest{
+		Phone:    "089089089089",
+		Password: "drowssap",
+	}
+
+	clientOkResponse := &pbauth.LoginResponse{
+		AccessToken:           "abcd.efghijkl.mnop",
+		RefreshToken:          "qwerty.asdfghjkl.zxcv",
+		RefreshExpirationHour: 12,
 	}
 
 	tests := []struct {
 		name         string
-		mockBehavior func(m *server_mock.MockCourseServiceClient)
+		mockBehavior func(m *server_mock.MockAuthServiceClient)
 		body         any
 		mutateReq    func(req *http.Request) *http.Request
 		assertCase   func(t *testing.T, w *httptest.ResponseRecorder)
 	}{
 		{
 			name: "Success_Created",
-			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+			mockBehavior: func(m *server_mock.MockAuthServiceClient) {
 				m.EXPECT().
-					AddCourse(gomock.Any(), gomock.Any()).
-					Return(&pbcourse.AddCourseResponse{
-						Id: 51,
-					}, nil)
+					Login(gomock.Any(), gomock.Any()).
+					Return(clientOkResponse, nil)
 			},
 			body: validBody,
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusCreated, w.Code)
-				assert.Contains(t, w.Body.String(), messageCreateCourseSucceed)
+				assert.Contains(t, w.Body.String(), messageLoginSucceed)
+				assert.Contains(t, w.Header().Get("Set-Cookie"), "refresh_token=")
 			},
 		},
 		{
 			name: "Failed_InvalidBody",
-			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+			mockBehavior: func(m *server_mock.MockAuthServiceClient) {
 				m.EXPECT().
-					AddCourse(gomock.Any(), gomock.Any()).
+					Login(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			body: "raw string",
@@ -64,14 +69,14 @@ func TestCourseHandler_Create(t *testing.T) {
 			},
 		},
 		{
-			name: "Failed_MissingNameField",
-			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+			name: "Failed_MissingPasswordField",
+			mockBehavior: func(m *server_mock.MockAuthServiceClient) {
 				m.EXPECT().
-					AddCourse(gomock.Any(), gomock.Any()).
+					Login(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			body: &dto.CreateCourseRequest{
-				Year: 2025,
+			body: &dto.LoginRequest{
+				Phone: "089089089089",
 			},
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -79,14 +84,14 @@ func TestCourseHandler_Create(t *testing.T) {
 			},
 		},
 		{
-			name: "Failed_MissingYearField",
-			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+			name: "Failed_MissingPhoneField",
+			mockBehavior: func(m *server_mock.MockAuthServiceClient) {
 				m.EXPECT().
-					AddCourse(gomock.Any(), gomock.Any()).
+					Login(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			body: &dto.CreateCourseRequest{
-				Name: "Course Test",
+			body: &dto.LoginRequest{
+				Password: "pawwsord",
 			},
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -95,10 +100,10 @@ func TestCourseHandler_Create(t *testing.T) {
 		},
 		{
 			name: "Failed_RequestTimeout",
-			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+			mockBehavior: func(m *server_mock.MockAuthServiceClient) {
 				m.EXPECT().
-					AddCourse(gomock.Any(), gomock.Any()).
-					DoAndReturn(func(ctx context.Context, req any, opts ...any) (*pbcourse.AddCourseResponse, error) {
+					Login(gomock.Any(), gomock.Any()).
+					DoAndReturn(func(ctx context.Context, req any, opts ...any) (*pbauth.LoginResponse, error) {
 						<-ctx.Done()
 						return nil, ctx.Err()
 					})
@@ -113,18 +118,12 @@ func TestCourseHandler_Create(t *testing.T) {
 		},
 		{
 			name: "Failed_RequestCanceled",
-			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+			mockBehavior: func(m *server_mock.MockAuthServiceClient) {
 				m.EXPECT().
-					AddCourse(gomock.Any(), gomock.Any()).
+					Login(gomock.Any(), gomock.Any()).
 					Return(nil, context.Canceled)
 			},
 			body: validBody,
-			mutateReq: func(req *http.Request) *http.Request {
-				ctx, cancel := context.WithCancel(req.Context())
-				cancel()
-
-				return req.WithContext(ctx)
-			},
 			assertCase: func(t *testing.T, w *httptest.ResponseRecorder) {
 				assert.Equal(t, httpStatusClientClosedRequest, w.Code)
 				strBody := w.Body.String()
@@ -132,12 +131,18 @@ func TestCourseHandler_Create(t *testing.T) {
 				assert.NotContains(t, strBody, messageRequestTimeout)
 				assert.Contains(t, strBody, messageClientClosedRequest)
 			},
+			mutateReq: func(req *http.Request) *http.Request {
+				ctx, cancel := context.WithCancel(req.Context())
+				cancel()
+
+				return req.WithContext(ctx)
+			},
 		},
 		{
 			name: "Failed_gRPCTimeout",
-			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+			mockBehavior: func(m *server_mock.MockAuthServiceClient) {
 				m.EXPECT().
-					AddCourse(gomock.Any(), gomock.Any()).
+					Login(gomock.Any(), gomock.Any()).
 					Return(nil, status.Error(codes.DeadlineExceeded, messageServiceTimeout))
 			},
 			body: validBody,
@@ -152,9 +157,9 @@ func TestCourseHandler_Create(t *testing.T) {
 		},
 		{
 			name: "Failed_InternalServerError",
-			mockBehavior: func(m *server_mock.MockCourseServiceClient) {
+			mockBehavior: func(m *server_mock.MockAuthServiceClient) {
 				m.EXPECT().
-					AddCourse(gomock.Any(), gomock.Any()).
+					Login(gomock.Any(), gomock.Any()).
 					Return(nil, status.Error(codes.Internal, ""))
 			},
 			body: validBody,
@@ -162,6 +167,8 @@ func TestCourseHandler_Create(t *testing.T) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
 				strBody := w.Body.String()
 				assert.NotContains(t, strBody, messageInvalidBody)
+				assert.NotContains(t, strBody, messageRequestTimeout)
+				assert.NotContains(t, strBody, messageClientClosedRequest)
 				assert.NotContains(t, strBody, messageServiceTimeout)
 				assert.Contains(t, strBody, messageInternalServerError)
 			},
@@ -173,15 +180,13 @@ func TestCourseHandler_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockCourseClient := server_mock.NewMockCourseServiceClient(ctrl)
-			test.mockBehavior(mockCourseClient)
+			mockAuthClient := server_mock.NewMockAuthServiceClient(ctrl)
+			test.mockBehavior(mockAuthClient)
 
-			h := NewCourseHandler(mockCourseClient)
+			h := NewAuthHandler(mockAuthClient, nil)
 
 			w := httptest.NewRecorder()
 			c, r := gin.CreateTestContext(w)
-
-			r.Use(mockAuthMiddleware())
 
 			if strings.Contains(test.name, "RequestTimeout") {
 				r.Use(func(c *gin.Context) {
@@ -193,7 +198,7 @@ func TestCourseHandler_Create(t *testing.T) {
 				})
 			}
 
-			r.POST("/courses", h.Create)
+			r.POST("/login", h.Login)
 
 			var b bytes.Buffer
 			if strBody, ok := test.body.(string); ok {
@@ -202,7 +207,7 @@ func TestCourseHandler_Create(t *testing.T) {
 				_ = json.NewEncoder(&b).Encode(test.body)
 			}
 
-			req := httptest.NewRequest(http.MethodPost, "/courses", &b)
+			req := httptest.NewRequest(http.MethodPost, "/login", &b)
 			req.Header.Set(strContentType, strApplicationJSON)
 
 			if test.mutateReq != nil {
@@ -214,37 +219,5 @@ func TestCourseHandler_Create(t *testing.T) {
 
 			test.assertCase(t, w)
 		})
-	}
-}
-
-func BenchmarkCourseHandler_Create(b *testing.B) {
-	ctrl := gomock.NewController(b)
-	defer ctrl.Finish()
-
-	mockCourseClient := server_mock.NewMockCourseServiceClient(ctrl)
-	h := NewCourseHandler(mockCourseClient)
-
-	mockCourseClient.EXPECT().
-		AddCourse(gomock.Any(), gomock.Any()).
-		Return(&pbcourse.AddCourseResponse{Id: 321}, nil).
-		AnyTimes()
-
-	validBody := []byte(`{"name":"Course Test","year":2025}`)
-
-	gin.SetMode(gin.ReleaseMode)
-	r := gin.New()
-	r.Use(mockAuthMiddleware())
-	r.POST("/courses", h.Create)
-
-	for range b.N {
-		b.StopTimer()
-
-		w := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "/courses", bytes.NewBuffer(validBody))
-		req.Header.Set(strContentType, strApplicationJSON)
-
-		b.StartTimer()
-
-		r.ServeHTTP(w, req)
 	}
 }
