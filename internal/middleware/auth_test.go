@@ -67,3 +67,65 @@ func TestAuth(t *testing.T) {
 		})
 	}
 }
+
+func TestGetAuthorization(t *testing.T) {
+	sampleToken := "sample.token"
+
+	tests := []struct {
+		name        string
+		headerValue string
+		assertCase  func(*testing.T, string, error)
+	}{
+		{
+			name:        "Success",
+			headerValue: "Bearer " + sampleToken,
+			assertCase: func(t *testing.T, s string, err error) {
+				assert.Equal(t, sampleToken, s)
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:        "Failed_MissingHeader",
+			headerValue: "",
+			assertCase: func(t *testing.T, s string, err error) {
+				assert.Equal(t, "", s)
+				assert.Error(t, err)
+			},
+		},
+		{
+			name:        "Failed_InvalidScheme",
+			headerValue: "My " + sampleToken,
+			assertCase: func(t *testing.T, s string, err error) {
+				assert.NotEqual(t, sampleToken, s)
+				assert.Equal(t, "", s)
+				assert.Error(t, err)
+			},
+		},
+		{
+			name:        "Failed_Malformed",
+			headerValue: "Bearer" + sampleToken,
+			assertCase: func(t *testing.T, s string, err error) {
+				assert.NotEqual(t, sampleToken, s)
+				assert.Equal(t, "", s)
+				assert.Error(t, err)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			if test.headerValue != "" {
+				req.Header.Set("Authorization", test.headerValue)
+			}
+			c.Request = req
+
+			token, err := GetAuthorization(c)
+
+			test.assertCase(t, token, err)
+		})
+	}
+}
