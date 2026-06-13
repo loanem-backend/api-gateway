@@ -56,18 +56,18 @@ func initHandlers(
 func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler, ch *CourseHandler, ih *InventoryHandler, ph *ParticipantHandler) {
 	r.POST("/login", ah.Login)
 	r.POST("/login/refresh", ah.RefreshToken)
-	r.POST("/logout", middleware.Auth(ac, getAuthorization), ah.Logout)
+	r.POST("/logout", middleware.Auth(ac), ah.Logout)
 	r.POST("/assistants", ah.Create)
-	r.PATCH("/me/password", middleware.Auth(ac, getAuthorization), ah.SetPassword)
+	r.PATCH("/me/password", middleware.Auth(ac), ah.SetPassword)
 
-	r.POST("/courses", middleware.Auth(ac, getAuthorization), ch.Create)
-	r.DELETE("/courses/:courseId", middleware.Auth(ac, getAuthorization), ch.Remove)
+	r.POST("/courses", middleware.Auth(ac), ch.Create)
+	r.DELETE("/courses/:courseId", middleware.Auth(ac), ch.Remove)
 
-	r.POST("/toolkits", middleware.Auth(ac, getAuthorization), ih.CreateToolkit)
-	r.POST("/instruments", middleware.Auth(ac, getAuthorization), ih.CreateInstrument)
+	r.POST("/toolkits", middleware.Auth(ac), ih.CreateToolkit)
+	r.POST("/instruments", middleware.Auth(ac), ih.CreateInstrument)
 	r.GET("/instruments", ih.GetAllInstruments)
-	r.PATCH("/instruments/:instrumentId/picture", middleware.Auth(ac, getAuthorization), ih.SetInstrumentPicture)
+	r.PATCH("/instruments/:instrumentId/picture", middleware.Auth(ac), ih.SetInstrumentPicture)
 
-	r.POST("/courses/:courseId/classes", middleware.Auth(ac, getAuthorization), ph.CreateClasses)
+	r.POST("/courses/:courseId/classes", middleware.Auth(ac), ph.CreateClasses)
 	r.GET("/courses/:courseId/classes", ph.GetClassesByCourse)
 }

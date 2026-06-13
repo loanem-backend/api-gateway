@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/loanem-backend/api-gateway/internal/dto"
+	"github.com/loanem-backend/api-gateway/internal/middleware"
 	"github.com/loanem-backend/api-gateway/pkg/respx"
 	pbauth "github.com/loanem-backend/protos/pb/proto/services/auth/v1"
 )
@@ -94,22 +94,8 @@ func (h *AuthHandler) SetPassword(c *gin.Context) {
 	c.JSON(http.StatusOK, respx.ResponseSucceed("Assistant successfully updated", nil))
 }
 
-func getAuthorization(c *gin.Context) (string, error) {
-	header := c.GetHeader("Authorization")
-	if header == "" {
-		return "", errors.New("missing authorization header")
-	}
-
-	parts := strings.SplitN(header, " ", 2)
-	if !(len(parts) == 2 && parts[0] == "Bearer") {
-		return "", errors.New("invalid token")
-	}
-
-	return parts[1], nil
-}
-
 func (h *AuthHandler) Logout(c *gin.Context) {
-	accessToken, err := getAuthorization(c)
+	accessToken, err := middleware.GetAuthorization(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, respx.ResponseFail("unauthorized", err))
 	}
