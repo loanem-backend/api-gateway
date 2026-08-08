@@ -3,6 +3,7 @@ package handler
 import (
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/loanem-backend/api-gateway/internal/middleware"
 	"github.com/loanem-backend/api-gateway/internal/service"
@@ -27,6 +28,12 @@ func Start(ge *gin.Engine, ac *grpc.ClientConn, cc *grpc.ClientConn, ic *grpc.Cl
 	ah, ch, ih, ph := initHandlers(authClient, assistantClient, courseClient, instrumentClient, toolkitClient, teamClient, sc)
 
 	r := ge.Use(middleware.Timeout(2 * time.Second))
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "PATCH"},
+		AllowHeaders: []string{"Content-Type", "Authorization"},
+	}))
+
 	routes(r, authClient, ah, ch, ih, ph)
 }
 
