@@ -24,6 +24,8 @@ func NewAuthHandler(ac pbauth.AuthServiceClient, asc pbauth.AssistantServiceClie
 	}
 }
 
+/* Auth */
+
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -46,28 +48,6 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 const cookieNameRefreshToken = "refresh_token"
-
-func (h *AuthHandler) Create(c *gin.Context) {
-	var req pbauth.CreateAssistantRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid body", err))
-		return
-	}
-
-	resp, err := h.assistantClient.CreateAssistant(c, &req)
-	if err != nil {
-		if c.Err() == context.DeadlineExceeded {
-			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed creating asssistant", err))
-		return
-	}
-
-	c.JSON(http.StatusCreated, respx.ResponseSucceed("Assistant successfully created", dto.NewCreateAssistantResponse(resp)))
-}
 
 func (h *AuthHandler) SetPassword(c *gin.Context) {
 	// ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
@@ -149,4 +129,43 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	)
 
 	c.JSON(http.StatusCreated, respx.ResponseSucceed("Successfully logged in", dto.NewLoginResponse(resp.GetAccessToken())))
+}
+
+/* Assistant */
+
+func (h *AuthHandler) Create(c *gin.Context) {
+	var req pbauth.CreateAssistantRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid body", err))
+		return
+	}
+
+	resp, err := h.assistantClient.CreateAssistant(c, &req)
+	if err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed creating asssistant", err))
+		return
+	}
+
+	c.JSON(http.StatusCreated, respx.ResponseSucceed("Assistant successfully created", dto.NewCreateAssistantResponse(resp)))
+}
+
+func (h *AuthHandler) GetAssistants(c *gin.Context) {
+	resp, err := h.assistantClient.GetActiveAssistants(c, &pbauth.GetActiveAssistantsRequest{})
+	if err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed fetching asssistant", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, respx.ResponseSucceed("Assistants successfully retrieved", dto.GetAssistantsResponse(resp)))
 }
