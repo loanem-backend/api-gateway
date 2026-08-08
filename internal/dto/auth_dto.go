@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"time"
+
 	pbauth "github.com/loanem-backend/protos/pb/proto/services/auth/v1"
 )
 
@@ -34,4 +36,37 @@ func NewCreateAssistantResponse(resp *pbauth.CreateAssistantResponse) *CreateAss
 	return &CreateAssistantResponse{
 		ID: int(resp.GetId()),
 	}
+}
+
+type AssistantResponse struct {
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Phone     string    `json:"phone"`
+	Period    int       `json:"period"`
+	IsActive  bool      `json:"is_active"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func PBAssistantToAssistantResponse(a *pbauth.Assistant) *AssistantResponse {
+	return &AssistantResponse{
+		ID:        int(a.GetId()),
+		Name:      a.GetName(),
+		Phone:     a.GetPhone(),
+		Period:    int(a.GetPeriod()),
+		IsActive:  a.GetActive(),
+		CreatedAt: a.GetCreatedAt().AsTime(),
+		UpdatedAt: a.GetUpdatedAt().AsTime(),
+	}
+}
+
+func GetAssistantsResponse(resp *pbauth.GetActiveAssistantsResponse) []AssistantResponse {
+	assistants := resp.GetAssistants()
+	responses := make([]AssistantResponse, len(assistants))
+
+	for i, a := range assistants {
+		responses[i] = *PBAssistantToAssistantResponse(a)
+	}
+
+	return responses
 }
