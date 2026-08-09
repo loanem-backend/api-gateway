@@ -1,0 +1,20 @@
+Assistant:
+  type: object
+  properties:
+    id:
+      type: integer
+    name:
+      type: string
+    phone:
+      type: string
+    period:
+      type: integer
+    is_active:
+      type: boolean
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+  required: [id, name, period, created_at, updated_at]

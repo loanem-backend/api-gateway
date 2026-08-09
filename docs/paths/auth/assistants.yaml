@@ -1,0 +1,46 @@
+get:
+  tags: [auth]
+  security: []
+  responses:
+    '200':
+      description: Successfully retrieved assistants data.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/schema/general.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '../../components/schema/assistant.yaml#/Assistant'
+
+post:
+  tags: [auth]
+  security: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            phone:
+              type: string
+            period:
+              type: integer
+  responses:
+    '201':
+      description: Successfully created assistant.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/schema/general.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  data:
+                    $ref: '../../components/schema/general.yaml#/IdInt'

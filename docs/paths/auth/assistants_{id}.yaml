@@ -1,0 +1,18 @@
+delete:
+  tags: [auth]
+  security:
+    - BearerAuth: []
+  parameters:
+    - in: path
+      name: assistantID
+      schema:
+        type: integer
+      required: true
+      description: Numeric ID of the assistant to delete
+  responses:
+    '200':
+      description: Successfully deleted assistant.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schema/general.yaml#/SuccessResponse'

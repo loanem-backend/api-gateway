@@ -28,6 +28,10 @@ paths:
     $ref: './docs/paths/auth/login_refresh.yaml'
   /logout:
     $ref: './docs/paths/auth/logout.yaml'
+  /assistants:
+    $ref: './docs/paths/auth/assistants.yaml'
+  /assistants/{assistantID}:
+    $ref: './docs/paths/auth/assistants_{id}.yaml'
   /courses:
     $ref: './docs/paths/course/courses.yaml'
   /courses/{courseID}:

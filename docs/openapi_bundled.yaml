@@ -120,6 +120,126 @@ paths:
                                 required:
                                     - success
                                     - message
+    /assistants:
+        get:
+            tags:
+                - auth
+            security: []
+            responses:
+                '200':
+                    description: Successfully retrieved assistants data.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - type: object
+                                      properties:
+                                        success:
+                                            type: boolean
+                                        message:
+                                            type: string
+                                      required:
+                                        - success
+                                        - message
+                                    - type: object
+                                      properties:
+                                        data:
+                                            type: array
+                                            items:
+                                                type: object
+                                                properties:
+                                                    id:
+                                                        type: integer
+                                                    name:
+                                                        type: string
+                                                    phone:
+                                                        type: string
+                                                    period:
+                                                        type: integer
+                                                    is_active:
+                                                        type: boolean
+                                                    created_at:
+                                                        type: string
+                                                        format: date-time
+                                                    updated_at:
+                                                        type: string
+                                                        format: date-time
+                                                required:
+                                                    - id
+                                                    - name
+                                                    - period
+                                                    - created_at
+                                                    - updated_at
+        post:
+            tags:
+                - auth
+            security: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name:
+                                    type: string
+                                phone:
+                                    type: string
+                                period:
+                                    type: integer
+            responses:
+                '201':
+                    description: Successfully created assistant.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - type: object
+                                      properties:
+                                        success:
+                                            type: boolean
+                                        message:
+                                            type: string
+                                      required:
+                                        - success
+                                        - message
+                                    - type: object
+                                      properties:
+                                        data:
+                                            type: object
+                                            properties:
+                                                id:
+                                                    type: integer
+                                            required:
+                                                - id
+    /assistants/{assistantID}:
+        delete:
+            tags:
+                - auth
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: assistantID
+                  schema:
+                    type: integer
+                  required: true
+                  description: Numeric ID of the assistant to delete
+            responses:
+                '200':
+                    description: Successfully deleted assistant.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                    message:
+                                        type: string
+                                required:
+                                    - success
+                                    - message
     /courses:
         post:
             tags:
@@ -325,6 +445,7 @@ paths:
         get:
             tags:
                 - inventory
+            security: []
             responses:
                 '200':
                     description: Instruments successfully retrieved.
@@ -404,8 +525,7 @@ paths:
         get:
             tags:
                 - participant
-            security:
-                - {}
+            security: []
             parameters:
                 - in: path
                   name: courseID

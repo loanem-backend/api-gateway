@@ -26,6 +26,7 @@ post:
 
 get:
   tags: [inventory]
+  security: []
   responses:
     '200':
       description: Instruments successfully retrieved.
