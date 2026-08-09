@@ -169,3 +169,27 @@ func (h *AuthHandler) GetAssistants(c *gin.Context) {
 
 	c.JSON(http.StatusOK, respx.ResponseSucceed("Assistants successfully retrieved", dto.GetAssistantsResponse(resp)))
 }
+
+func (h *AuthHandler) DeleteAssistant(c *gin.Context) {
+	idParam, err := parseIntParam(c, "assistantId")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid param", err))
+		return
+	}
+
+	ctx := setLoginDataToContext(c)
+
+	if _, err := h.assistantClient.DeleteAssistant(ctx, &pbauth.DeleteAssistantRequest{
+		Id: idParam,
+	}); err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed deleting assistant", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, respx.ResponseSucceed("Assistant successfully deleted", nil))
+}
