@@ -66,7 +66,8 @@ func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler, ch *Cou
 	r.POST("/logout", middleware.Auth(ac), ah.Logout)
 
 	r.POST("/assistants", ah.Create)
-	r.PATCH("/me/password", middleware.Auth(ac), ah.SetPassword)
+	r.POST("/me/password", middleware.Auth(ac), ah.SubmitPasswordChange)
+	r.PATCH("/me/password", ah.SetPassword)
 	r.GET("/assistants", ah.GetAssistants)
 	r.DELETE("/assistants/:assistantId", middleware.Auth(ac), ah.DeleteAssistant)
 

@@ -49,11 +49,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 const cookieNameRefreshToken = "refresh_token"
 
-func (h *AuthHandler) SetPassword(c *gin.Context) {
-	// ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
-	// defer cancel()
-
-	var req pbauth.SetAssistantPasswordRequest
+func (h *AuthHandler) SubmitPasswordChange(c *gin.Context) {
+	var req pbauth.SubmitAssistantPasswordChangeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, respx.ResponseFail("invalid body", err))
 		return
@@ -61,7 +58,26 @@ func (h *AuthHandler) SetPassword(c *gin.Context) {
 
 	ctx := setLoginDataToContext(c)
 
-	if _, err := h.assistantClient.SetAssistantPassword(ctx, &req); err != nil {
+	if _, err := h.assistantClient.SubmitAssistantPasswordChange(ctx, &req); err != nil {
+		if c.Err() == context.DeadlineExceeded {
+			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, respx.ResponseFail("failed sending password change confirmation", err))
+		return
+	}
+}
+
+func (h *AuthHandler) SetPassword(c *gin.Context) {
+	// ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
+	// defer cancel()
+
+	tokenQuery := c.Query("token")
+
+	if _, err := h.assistantClient.SetAssistantPassword(c, &pbauth.SetAssistantPasswordRequest{
+		ChangePasswordToken: tokenQuery,
+	}); err != nil {
 		if c.Err() == context.DeadlineExceeded {
 			c.JSON(http.StatusGatewayTimeout, respx.ResponseFail("service timeout", c.Err()))
 			return
