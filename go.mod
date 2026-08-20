@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.103.2
 	github.com/gin-gonic/gin v1.12.0
 	github.com/joho/godotenv v1.5.1
-	github.com/loanem-backend/protos v0.0.0-20260610121058-8224e62935b9
+	github.com/loanem-backend/protos v0.0.0-20260818101648-0ae41b067fb7
 	google.golang.org/grpc v1.81.0
 )
 

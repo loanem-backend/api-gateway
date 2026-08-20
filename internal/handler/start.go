@@ -64,10 +64,12 @@ func routes(r gin.IRoutes, ac pbauth.AuthServiceClient, ah *AuthHandler, ch *Cou
 	r.POST("/login", ah.Login)
 	r.POST("/login/refresh", ah.RefreshToken)
 	r.POST("/logout", middleware.Auth(ac), ah.Logout)
-	r.POST("/assistants", ah.Create)
-	r.PATCH("/me/password", middleware.Auth(ac), ah.SetPassword)
 
+	r.POST("/assistants", ah.Create)
+	r.POST("/me/password", middleware.Auth(ac), ah.SubmitPasswordChange)
+	r.GET("/me/password", ah.SetPassword)
 	r.GET("/assistants", ah.GetAssistants)
+	r.DELETE("/assistants/:assistantId", middleware.Auth(ac), ah.DeleteAssistant)
 
 	r.POST("/courses", middleware.Auth(ac), ch.Create)
 	r.DELETE("/courses/:courseId", middleware.Auth(ac), ch.Remove)
